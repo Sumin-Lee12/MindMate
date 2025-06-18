@@ -12,14 +12,7 @@ module.exports = {
     'prettier', // prettier와 충돌하는 ESLint 규칙 제거
   ],
   parser: '@typescript-eslint/parser',
-  plugins: [
-    'react',
-    'react-native',
-    '@typescript-eslint',
-    'import',
-    'unused-imports',
-    'prettier',
-  ],
+  plugins: ['react', 'react-native', '@typescript-eslint', 'import', 'unused-imports', 'prettier'],
   parserOptions: {
     ecmaVersion: 2020,
     sourceType: 'module',
@@ -49,13 +42,7 @@ module.exports = {
     'import/order': [
       'warn',
       {
-        groups: [
-          'builtin',
-          'external',
-          'internal',
-          ['sibling', 'parent'],
-          'index',
-        ],
+        groups: ['builtin', 'external', 'internal', ['sibling', 'parent'], 'index'],
         pathGroups: [
           {
             pattern: 'react',
