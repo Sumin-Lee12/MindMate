@@ -20,6 +20,16 @@ module.exports = {
         foggyBlue: 'var(--color-foggyBlue)',
         paleCobalt: 'var(--color-paleCobalt)',
       },
+      fontFamily: {
+        pretendard: ['pretendard', 'System'],
+      },
+      fontSize: {
+        ss: 16,
+        sm: 18,
+        md: 20,
+        lg: 24,
+        xl: 32,
+      },
     },
   },
   plugins: [],
