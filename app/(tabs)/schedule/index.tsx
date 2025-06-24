@@ -1,14 +1,3 @@
-// import { Text, View } from 'react-native';
-
-// export default function HomeScreen() {
-//   return (
-//     //홈화면
-//     <View className="flex-1 items-center justify-center bg-white">
-//       <Text className="text-xl font-bold text-blue-500">일정기록</Text>
-//     </View>
-//   );
-// }
-
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, SafeAreaView } from 'react-native';
 
@@ -20,29 +9,35 @@ type TaskItemProps = {
 };
 
 const SchedulePage = () => {
-  const [selectedTab, setSelectedTab] = useState('일정');
   const [selectedDate, setSelectedDate] = useState(5);
 
-  const tabs = ['일기', '일정', '루틴', '찾기', '주소록'];
   const days = ['일', '월', '화', '수', '목', '금', '토'];
   const dates = [1, 2, 3, 4, 5, 6, 7];
 
   const TaskItem = ({ time, title, completed, hasNotification }: TaskItemProps) => (
-    <View className="mb-3 rounded-lg bg-white p-4 shadow-sm">
+    <View className="relative mb-3 h-20 justify-center rounded-lg bg-white p-4 shadow-sm">
+      <View
+        className={`absolute left-0 h-20 w-2 rounded-l-md ${completed ? 'bg-teal' : 'bg-pink'}`}
+      ></View>
       <View className="flex-row items-center justify-between">
         <View className="flex-row items-center">
-          <Text className="mr-4 text-sm text-gray-600">{time}</Text>
-          <Text className="text-base font-medium text-gray-800">{title}</Text>
+          <Text className="text-gray mr-4 text-sm">{time}</Text>
+          <Text className="text-md font-bold text-black">{title}</Text>
         </View>
         <View className="flex-row items-center">
-          {completed && (
-            <View className="mr-2 h-6 w-6 items-center justify-center rounded-full bg-green-500">
-              <Text className="text-xs text-white">✓</Text>
+          // 아이콘으로 들어가는 체크 표시와 종은 lucid Icon 설치 이후 수정하겠습니다!
+          {completed ? (
+            <View className="bg-teal mr-2 h-6 w-6 items-center justify-center rounded-md">
+              <Text className="text-xs">✓</Text>
+            </View>
+          ) : (
+            <View className="border-pink mr-2 h-6 w-6 items-center justify-center rounded-md border-2">
+              <Text className="text-xs"></Text>
             </View>
           )}
           {hasNotification && (
-            <View className="h-6 w-6 items-center justify-center rounded-full bg-red-500">
-              <Text className="text-xs text-white">🔔</Text>
+            <View className="h-6 w-6 items-center justify-center">
+              <Text className="text-xs">🔔</Text>
             </View>
           )}
         </View>
@@ -51,38 +46,16 @@ const SchedulePage = () => {
   );
 
   return (
-    <SafeAreaView className="flex-1 bg-gray-50">
+    <SafeAreaView className="bg-turquoise flex-1">
       <ScrollView className="flex-1">
         {/* Header */}
-        <View className="bg-white px-4 py-6">
-          <Text className="mb-6 text-center text-2xl font-bold text-blue-500">MIND MATE</Text>
-
-          {/* Tab Navigation */}
-          <View className="mb-6 flex-row justify-between">
-            {tabs.map((tab) => (
-              <TouchableOpacity
-                key={tab}
-                onPress={() => setSelectedTab(tab)}
-                className={`rounded-full px-4 py-2 ${
-                  selectedTab === tab ? 'bg-blue-500' : 'bg-gray-100'
-                }`}
-              >
-                <Text
-                  className={`text-sm font-medium ${
-                    selectedTab === tab ? 'text-white' : 'text-gray-600'
-                  }`}
-                >
-                  {tab}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-
+        <View className="mt-6 px-4">
           {/* Date Header */}
-          <View className="mb-4 flex-row items-center justify-between">
-            <Text className="text-lg font-medium text-gray-700">2025년 6월 5일</Text>
-            <TouchableOpacity className="p-2">
-              <Text className="text-xl text-blue-500">📅</Text>
+          <View className="relative mb-6 flex-row items-center justify-center">
+            <Text className="text-paleCobalt text-lg">2025년 6월 5일</Text>
+            <TouchableOpacity className="absolute right-0 p-2">
+              // 아이콘으로 들어가는 체크 표시와 종은 lucid Icon 설치 이후 수정하겠습니다!
+              <Text className=" text-xl text-blue-500">📅</Text>
             </TouchableOpacity>
           </View>
 
@@ -90,37 +63,32 @@ const SchedulePage = () => {
           <View className="mb-6 flex-row justify-between">
             {days.map((day, index) => (
               <View key={day} className="items-center">
-                <Text className="mb-2 text-sm text-gray-600">{day}</Text>
                 <TouchableOpacity
                   onPress={() => setSelectedDate(dates[index])}
-                  className={`h-10 w-10 items-center justify-center rounded-full ${
-                    selectedDate === dates[index] ? 'bg-green-100' : 'bg-transparent'
+                  className={`h-20 w-10 items-center justify-center gap-2 rounded-full ${
+                    selectedDate === dates[index] ? 'bg-teal' : 'bg-transparent'
                   }`}
                 >
-                  <Text
-                    className={`text-base font-medium ${
-                      selectedDate === dates[index] ? 'text-green-600' : 'text-gray-700'
-                    }`}
-                  >
-                    {dates[index]}
-                  </Text>
+                  <Text className="text-paleCobalt text-sm">{day}</Text>
+                  <Text className="text-paleCobalt text-base font-medium">{dates[index]}</Text>
                 </TouchableOpacity>
               </View>
             ))}
           </View>
 
           {/* Achievement Banner */}
-          <View className="mb-6 rounded-lg bg-yellow-200 p-4">
+          <View className="bg-paleYellow shadow-dropShadowHard mb-6 h-[131px] items-center justify-center rounded-xl px-4 py-7">
             <View className="flex-row items-center justify-between">
-              <View>
-                <Text className="text-base font-medium text-gray-800">
-                  오늘 일정 <Text className="font-bold">14</Text>개 중
+              <View className="relative gap-4">
+                <Text className="text-paleCobalt justify-start text-lg font-bold">
+                  오늘 일정 <Text className="font-bold text-black">14</Text>개 중
                 </Text>
-                <Text className="text-base font-medium text-gray-800">
-                  총 <Text className="font-bold text-green-600">10</Text>개를 완료했어요!
+                <Text className="text-paleCobalt text-xl font-bold">
+                  총 <Text className="font-bold text-black">10</Text>개를 완료
+                  <Text className="text-lg">했어요!</Text>
                 </Text>
               </View>
-              <Text className="text-3xl">😊</Text>
+              <Text className="bottom-6 z-20 text-[64px]">😊</Text>
             </View>
           </View>
         </View>
@@ -128,21 +96,23 @@ const SchedulePage = () => {
         {/* Task Sections */}
         <View className="px-4 pb-6">
           {/* Tab Indicators */}
-          <View className="mb-4 flex-row">
-            <View className="mr-2 rounded-full bg-red-200 px-3 py-1">
-              <Text className="text-sm font-medium text-red-700">미완료</Text>
+          <View className="mb-4 flex-1 flex-row justify-end">
+            <View className="mr-2 flex-row gap-2 px-3 py-1">
+              <View className="bg-pink h-6 w-6"></View>
+              <Text className="text-sm font-medium">미완료</Text>
             </View>
-            <View className="rounded-full bg-green-200 px-3 py-1">
-              <Text className="text-sm font-medium text-green-700">완료</Text>
+            <View className="mr-2 flex-row gap-2 px-3 py-1">
+              <View className="bg-teal h-6 w-6"></View>
+              <Text className="text-sm font-medium">완료</Text>
             </View>
           </View>
 
-          {/* 미완료 Section */}
-          <Text className="mb-3 text-lg font-bold text-gray-800">미완료</Text>
+          {/* 미완료 칸 */}
+          <Text className="text-md mb-3 font-bold text-black">미완료</Text>
           <TaskItem
             time="08:00"
             title="리액트 네이티브 공부"
-            completed={true}
+            completed={false}
             hasNotification={false}
           />
           <TaskItem
@@ -152,17 +122,12 @@ const SchedulePage = () => {
             hasNotification={true}
           />
 
-          {/* 완료 Section */}
-          <Text className="mb-3 mt-6 text-lg font-bold text-gray-800">완료</Text>
-          <View className="mb-3 rounded-lg bg-white p-4 shadow-sm">
-            <View className="flex-row items-center justify-between">
-              <Text className="flex-1 text-center text-gray-400">...</Text>
-            </View>
-          </View>
+          {/* 완료 칸 */}
+          <Text className="text-md mb-3 mt-6 font-bold text-black">완료</Text>
           <TaskItem
             time="08:00"
             title="리액트 네이티브 공부"
-            completed={false}
+            completed={true}
             hasNotification={false}
           />
         </View>
@@ -170,10 +135,11 @@ const SchedulePage = () => {
 
       {/* Floating Action Button */}
       <TouchableOpacity
-        className="absolute bottom-6 right-6 h-14 w-14 items-center justify-center rounded-full bg-blue-500 shadow-lg"
+        className="bg-paleCobalt absolute bottom-8 right-6 h-16 w-16 items-center justify-center rounded-full"
         style={{ elevation: 8 }}
       >
-        <Text className="text-2xl font-light text-white">+</Text>
+        // 체크 필요: 이 부분은 lucid Icon 설치한 이후에 텍스트가 아닌 아이콘으로 바꾸겠습니다!
+        <Text className="text-5xl font-light text-white">+</Text>
       </TouchableOpacity>
     </SafeAreaView>
   );
