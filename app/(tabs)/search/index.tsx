@@ -1,29 +1,28 @@
-import { Text,  View } from 'react-native';
+import { View } from 'react-native';
 import SearchInput from '../../../src/components/ui/search-input';
-import CommonBox from '../../../src/components/ui/common-box';
 import SearchCategoryButton from '../../../src/features/search/components/search-category-button';
-
-const searchCategories = [
-  { icon: '🗝️', label: '개인용품', color: 'foggyBlue' },
-  { icon: '📱', label: '모바일', color: 'paleYellow' },
-  { icon: '💻', label: '전자제품', color: 'pink' },
-  { icon: '☕', label: '주방용품', color: 'teal' },
-];
+import SearchItemCard from '../../../src/features/search/components/search-item-card';
+import { searchCategories } from '../../../src/features/constants/search-category-constants';
 
 export default function HomeScreen() {
   return (
     //홈화면
     <View className="items-center justify-center bg-turquoise p-4">
-      <SearchInput />
-      <View className="w-full flex-row justify-between">
+      <View className="mb-4 w-full">
+        <SearchInput />
+      </View>
+
+      <View className="mb-8 w-full flex-row justify-between">
         {searchCategories.map((category, index) => (
-          <SearchCategoryButton key={index} category={category} />
+          <SearchCategoryButton key={index} label={category.label} />
         ))}
       </View>
-      <View className="w-full">
-        <CommonBox>
-          <Text className="text-lg font-bold text-paleCobalt">추천 검색어</Text>
-        </CommonBox>
+
+      <View className="w-full gap-4">
+        <SearchItemCard id="1" />
+        <SearchItemCard id="2" />
+        <SearchItemCard id="3" />
+        <SearchItemCard id="4" />
       </View>
     </View>
   );
