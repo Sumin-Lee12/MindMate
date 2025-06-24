@@ -8,7 +8,11 @@ type CommonBoxProps = {
 const CommonBox = ({ children, color }: CommonBoxProps) => {
   return (
     <View
-      className={`w-full rounded-md border-l-4 border-l-${color ? color : 'paleCobalt'} bg-white p-4`}
+      className="w-full rounded-md bg-white p-4"
+      style={{
+        borderLeftWidth: 4,
+        borderLeftColor: color || 'paleCobalt', 
+      }}
     >
       {children}
     </View>
