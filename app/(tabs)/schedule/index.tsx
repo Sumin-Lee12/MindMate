@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, SafeAreaView } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, SafeAreaView, Image } from 'react-native';
 
 type TaskItemProps = {
   time: string;
@@ -88,7 +88,10 @@ const SchedulePage = () => {
                   <Text className="text-lg">했어요!</Text>
                 </Text>
               </View>
-              <Text className="bottom-6 z-20 text-[64px]">😊</Text>
+              <Image
+                className="bottom-6 h-16 w-16"
+                source={require('../../../assets/winking-face-png.png')}
+              />
             </View>
           </View>
         </View>
