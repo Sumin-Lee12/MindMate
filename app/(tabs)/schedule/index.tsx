@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, SafeAreaView, Image } from 'react-native';
+import { Calendar, Check, BellRing, BellOff } from 'lucide-react-native';
+import { router } from 'expo-router';
 
 type TaskItemProps = {
   time: string;
@@ -10,12 +12,21 @@ type TaskItemProps = {
 
 const SchedulePage = () => {
   const [selectedDate, setSelectedDate] = useState(5);
-
   const days = ['일', '월', '화', '수', '목', '금', '토'];
   const dates = [1, 2, 3, 4, 5, 6, 7];
 
+  // 일단 색상 변수 만들어 사용했습니다!
+  const paleCobalt = '#576BCD';
+  const red = '#ff0000';
+  const black = '#000000';
+  const gray = '#7d7d7d';
+
+  const handlePress = () => {
+    router.push('/(tabs)/schedule/create');
+  };
+
   const TaskItem = ({ time, title, completed, hasNotification }: TaskItemProps) => (
-    <View className="relative mb-3 h-20 justify-center rounded-lg bg-white p-4 shadow-sm">
+    <View className="shadow-dropShadow relative mb-3 h-20 justify-center rounded-lg bg-white p-4">
       <View
         className={`absolute left-0 h-20 w-2 rounded-l-md ${completed ? 'bg-teal' : 'bg-pink'}`}
       ></View>
@@ -27,18 +38,22 @@ const SchedulePage = () => {
         <View className="flex-row items-center">
           // 아이콘으로 들어가는 체크 표시와 종은 lucid Icon 설치 이후 수정하겠습니다!
           {completed ? (
-            <View className="bg-teal mr-2 h-6 w-6 items-center justify-center rounded-md">
-              <Text className="text-xs">✓</Text>
+            <View className="bg-teal mr-2 h-7 w-7 items-center justify-center rounded-md">
+              <Text className="text-xs">
+                <Check color={black} />
+              </Text>
             </View>
           ) : (
-            <View className="border-pink mr-2 h-6 w-6 items-center justify-center rounded-md border-2">
-              <Text className="text-xs"></Text>
-            </View>
-          )}
-          {hasNotification && (
-            <View className="h-6 w-6 items-center justify-center">
-              <Text className="text-xs">🔔</Text>
-            </View>
+            <>
+              <View className="border-pink mr-4 h-7 w-7 items-center justify-center rounded-md border-2">
+                <Text className="text-xs"></Text>
+              </View>
+              <View className="h-7 w-7 items-center justify-center">
+                <Text className="text-xs">
+                  {hasNotification ? <BellRing color={red} /> : <BellOff color={gray} />}
+                </Text>
+              </View>
+            </>
           )}
         </View>
       </View>
@@ -54,8 +69,7 @@ const SchedulePage = () => {
           <View className="relative mb-6 flex-row items-center justify-center">
             <Text className="text-paleCobalt text-lg">2025년 6월 5일</Text>
             <TouchableOpacity className="absolute right-0 p-2">
-              // 아이콘으로 들어가는 체크 표시와 종은 lucid Icon 설치 이후 수정하겠습니다!
-              <Text className=" text-xl text-blue-500">📅</Text>
+              <Calendar color={paleCobalt} />
             </TouchableOpacity>
           </View>
 
@@ -89,7 +103,7 @@ const SchedulePage = () => {
                 </Text>
               </View>
               <Image
-                className="bottom-6 h-16 w-16"
+                className="bottom-6 z-20 h-16 w-16"
                 source={require('../../../assets/winking-face-png.png')}
               />
             </View>
@@ -101,11 +115,11 @@ const SchedulePage = () => {
           {/* Tab Indicators */}
           <View className="mb-4 flex-1 flex-row justify-end">
             <View className="mr-2 flex-row gap-2 px-3 py-1">
-              <View className="bg-pink h-6 w-6"></View>
+              <View className="bg-pink h-6 w-6 rounded-md"></View>
               <Text className="text-sm font-medium">미완료</Text>
             </View>
             <View className="mr-2 flex-row gap-2 px-3 py-1">
-              <View className="bg-teal h-6 w-6"></View>
+              <View className="bg-teal h-6 w-6 rounded-md"></View>
               <Text className="text-sm font-medium">완료</Text>
             </View>
           </View>
@@ -139,9 +153,8 @@ const SchedulePage = () => {
       {/* Floating Action Button */}
       <TouchableOpacity
         className="bg-paleCobalt absolute bottom-8 right-6 h-16 w-16 items-center justify-center rounded-full"
-        style={{ elevation: 8 }}
+        onPress={() => handlePress()}
       >
-        // 체크 필요: 이 부분은 lucid Icon 설치한 이후에 텍스트가 아닌 아이콘으로 바꾸겠습니다!
         <Text className="text-5xl font-light text-white">+</Text>
       </TouchableOpacity>
     </SafeAreaView>
