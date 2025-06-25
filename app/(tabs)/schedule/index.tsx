@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, SafeAreaView, Image } from 'react-native';
 import { Calendar, Check, BellRing, BellOff } from 'lucide-react-native';
 import { router } from 'expo-router';
+import { Colors } from '../../../src/constants/colors';
 
 type TaskItemProps = {
   time: string;
@@ -14,12 +15,6 @@ const SchedulePage = () => {
   const [selectedDate, setSelectedDate] = useState(5);
   const days = ['일', '월', '화', '수', '목', '금', '토'];
   const dates = [1, 2, 3, 4, 5, 6, 7];
-
-  // 일단 색상 변수 만들어 사용했습니다!
-  const paleCobalt = '#576BCD';
-  const red = '#ff0000';
-  const black = '#000000';
-  const gray = '#7d7d7d';
 
   const handlePress = () => {
     router.push('/(tabs)/schedule/create');
@@ -40,7 +35,7 @@ const SchedulePage = () => {
           {completed ? (
             <View className="bg-teal mr-2 h-7 w-7 items-center justify-center rounded-md">
               <Text className="text-xs">
-                <Check color={black} />
+                <Check color={Colors.black} />
               </Text>
             </View>
           ) : (
@@ -50,7 +45,11 @@ const SchedulePage = () => {
               </View>
               <View className="h-7 w-7 items-center justify-center">
                 <Text className="text-xs">
-                  {hasNotification ? <BellRing color={red} /> : <BellOff color={gray} />}
+                  {hasNotification ? (
+                    <BellRing color={Colors.red} />
+                  ) : (
+                    <BellOff color={Colors.gray} />
+                  )}
                 </Text>
               </View>
             </>
@@ -69,7 +68,7 @@ const SchedulePage = () => {
           <View className="relative mb-6 flex-row items-center justify-center">
             <Text className="text-paleCobalt text-lg">2025년 6월 5일</Text>
             <TouchableOpacity className="absolute right-0 p-2">
-              <Calendar color={paleCobalt} />
+              <Calendar color={Colors.paleCobalt} />
             </TouchableOpacity>
           </View>
 
