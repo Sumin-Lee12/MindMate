@@ -14,6 +14,10 @@ const SearchItemCard = ({ id }: SearchItemCardProps) => {
 
   return (
     <CommonBox color="paleCobalt">
+      {/**Todo
+       * 추후 id를 이용해 commonbox의 색상을 변경할 수 있도록 구현
+       * 현재는 id가 없으면 기본 색상으로 설정되어 있음
+       */}
       <TouchableOpacity onPress={handlePress}>
         <View className="flex-row items-center ">
           <View className="mr-4">

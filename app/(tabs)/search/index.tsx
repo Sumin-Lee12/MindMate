@@ -18,6 +18,9 @@ export default function HomeScreen() {
         ))}
       </View>
 
+        {/**Todo
+         * 추후 저장된 데이터를 이용하여 목록 보여주기
+         */}
       <View className="w-full gap-4">
         <SearchItemCard id="1" />
         <SearchItemCard id="2" />
