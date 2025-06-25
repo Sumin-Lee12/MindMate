@@ -62,9 +62,8 @@ const SchedulePage = () => {
   return (
     <SafeAreaView className="bg-turquoise flex-1">
       <ScrollView className="flex-1">
-        {/* Header */}
+        {/* 오늘 날짜 헤더 */}
         <View className="mt-6 px-4">
-          {/* Date Header */}
           <View className="relative mb-6 flex-row items-center justify-center">
             <Text className="text-paleCobalt text-lg">2025년 6월 5일</Text>
             <TouchableOpacity className="absolute right-0 p-2">
@@ -72,7 +71,7 @@ const SchedulePage = () => {
             </TouchableOpacity>
           </View>
 
-          {/* Calendar Days */}
+          {/* 달력 날짜 */}
           <View className="mb-6 flex-row justify-between">
             {days.map((day, index) => (
               <View key={day} className="items-center">
@@ -89,7 +88,7 @@ const SchedulePage = () => {
             ))}
           </View>
 
-          {/* Achievement Banner */}
+          {/* 오늘 할 일 00개 했어요! 배너 */}
           <View className="bg-paleYellow shadow-dropShadowHard mb-6 h-[131px] items-center justify-center rounded-xl px-4 py-7">
             <View className="flex-row items-center justify-between">
               <View className="relative gap-4">
@@ -109,9 +108,7 @@ const SchedulePage = () => {
           </View>
         </View>
 
-        {/* Task Sections */}
         <View className="px-4 pb-6">
-          {/* Tab Indicators */}
           <View className="mb-4 flex-1 flex-row justify-end">
             <View className="mr-2 flex-row gap-2 px-3 py-1">
               <View className="bg-pink h-6 w-6 rounded-md"></View>
@@ -149,7 +146,7 @@ const SchedulePage = () => {
         </View>
       </ScrollView>
 
-      {/* Floating Action Button */}
+      {/* 일정 추가 버튼 */}
       <TouchableOpacity
         className="bg-paleCobalt absolute bottom-8 right-6 h-16 w-16 items-center justify-center rounded-full"
         onPress={() => handlePress()}
