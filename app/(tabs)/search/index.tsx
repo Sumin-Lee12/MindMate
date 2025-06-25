@@ -2,7 +2,7 @@ import { View } from 'react-native';
 import SearchInput from '../../../src/components/ui/search-input';
 import SearchCategoryButton from '../../../src/features/search/components/search-category-button';
 import SearchItemCard from '../../../src/features/search/components/search-item-card';
-import { searchCategories } from '../../../src/features/constants/search-category-constants';
+import { searchCategories } from '../../../src/features/search/constants/search-category-constants';
 
 export default function HomeScreen() {
   return (
