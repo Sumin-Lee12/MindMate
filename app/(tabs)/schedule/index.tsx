@@ -31,7 +31,7 @@ const SchedulePage = () => {
           <Text className="text-md font-bold text-black">{title}</Text>
         </View>
         <View className="flex-row items-center">
-          // 아이콘으로 들어가는 체크 표시와 종은 lucid Icon 설치 이후 수정하겠습니다!
+          {/** 아이콘으로 들어가는 체크 표시와 종은 lucid Icon 설치 이후 수정하겠습니다! */}          
           {completed ? (
             <View className="bg-teal mr-2 h-7 w-7 items-center justify-center rounded-md">
               <Text className="text-xs">
