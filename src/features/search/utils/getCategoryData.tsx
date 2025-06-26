@@ -8,7 +8,7 @@ import { searchCategories } from '../constants/search-category-constants';
 export const getCategoryData = (label: string) => {
   const foundCategory = searchCategories.find((category) => category.label === label);
   return {
-    icon: foundCategory?.icon ?? '🫠',
+    icon: foundCategory?.icon ?? '❓',
     color: foundCategory?.color ?? 'foggyBlue',
   };
 };
