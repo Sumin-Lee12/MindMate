@@ -2,6 +2,7 @@ import { Text, TouchableOpacity, View } from 'react-native';
 import CommonBox from '../../../components/ui/common-box';
 import SearchCategoryButton from './search-category-button';
 import { router } from 'expo-router';
+import { ChevronRight } from 'lucide-react-native';
 
 type SearchItemCardProps = {
   id?: string;
@@ -33,7 +34,7 @@ const SearchItemCard = ({ id }: SearchItemCardProps) => {
           </View>
 
           <TouchableOpacity>
-            <Text>{`>`}</Text>
+              <ChevronRight />
           </TouchableOpacity>
         </View>
       </TouchableOpacity>
