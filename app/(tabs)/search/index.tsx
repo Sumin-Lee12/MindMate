@@ -4,7 +4,7 @@ import SearchCategoryButton from '../../../src/features/search/components/search
 import SearchItemCard from '../../../src/features/search/components/search-item-card';
 import { searchCategories } from '../../../src/features/search/constants/search-category-constants';
 
-export default function HomeScreen() {
+const HomeScreen = () => {
   return (
     //홈화면
     <View className="items-center justify-center bg-turquoise p-4">
@@ -18,15 +18,16 @@ export default function HomeScreen() {
         ))}
       </View>
 
-        {/**Todo
-         * 추후 저장된 데이터를 이용하여 목록 보여주기
-         */}
+      {/**Todo
+       * 추후 저장된 데이터를 이용하여 목록 보여주기
+       */}
       <View className="w-full gap-4">
-        <SearchItemCard id="1" />
-        <SearchItemCard id="2" />
-        <SearchItemCard id="3" />
-        <SearchItemCard id="4" />
+        {Array.from({ length: 4 }).map((_, index) => (
+          <SearchItemCard id={String(index)} key={index} />
+        ))}
       </View>
     </View>
   );
-}
+};
+
+export default HomeScreen;
