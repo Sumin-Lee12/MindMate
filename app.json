@@ -26,6 +26,13 @@
       "favicon": "./assets/favicon.png",
       "bundler": "metro"
     },
-    "plugins": ["expo-sqlite"]
+    "plugins": [
+      "expo-sqlite"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "49e12348-2203-4a9a-8826-bd82c1c839f7"
+      }
+    }
   }
 }
