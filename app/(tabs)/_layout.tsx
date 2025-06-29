@@ -1,14 +1,11 @@
 import { withLayoutContext } from 'expo-router';
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
-import { useInitializeDatabase } from '../../src/hooks/use-initialize-database';
 
 const { Navigator } = createMaterialTopTabNavigator();
 
 export const MaterialTopTabs = withLayoutContext(Navigator);
 
 export default function TabLayout() {
-  useInitializeDatabase();
-
   return (
     <MaterialTopTabs
       screenOptions={{
