@@ -16,3 +16,5 @@ export const searchDbInit = async () => {
       file_path TEXT NOT NULL, -- 로컬 파일 경로
 `);
 };
+
+export const createDb = async () => {};

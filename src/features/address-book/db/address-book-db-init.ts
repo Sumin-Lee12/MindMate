@@ -1,6 +1,6 @@
 import { db } from '../../../lib/db/share-db-init';
 
-export const addressBookDBinit = async () => {
+export const addressBookDbInit = async () => {
   await db.execAsync(`
     PRAGMA foreign_keys = ON;
 
