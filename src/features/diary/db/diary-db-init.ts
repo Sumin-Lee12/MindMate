@@ -1,10 +1,9 @@
-import { db } from '../../../lib/db/share-db-init';
+import { db } from '../../../hooks/use-initialize-database';
 
 export const diaryDbInit = async () => {
   await db.execAsync(`
     PRAGMA foreign_keys = ON;
     PRAGMA journal_mode = WAL;
-
 
     CREATE TABLE IF NOT EXISTS diaries (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -17,6 +16,5 @@ export const diaryDbInit = async () => {
       created_at TEXT,
       updated_at TEXT
     );
-  );
-`);
+  `);
 };

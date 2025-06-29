@@ -1,4 +1,4 @@
-import { db } from '../../../lib/db/share-db-init';
+import { db } from '../../../hooks/use-initialize-database';
 
 export const addressBookDbInit = async () => {
   await db.execAsync(`
