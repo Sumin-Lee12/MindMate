@@ -7,8 +7,8 @@ const AddressBookList = () => {
   return (
     <ScrollView>
       <View className="flex-col gap-2">
-        {arr.map(() => {
-          return <AddressBookItem />;
+        {arr.map((idx) => {
+          return <AddressBookItem key={idx} />;
         })}
       </View>
     </ScrollView>
