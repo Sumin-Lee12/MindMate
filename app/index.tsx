@@ -1,5 +1,6 @@
 import { Text, View, TouchableOpacity } from 'react-native';
 import { router } from 'expo-router';
+import DevDbShareButton from '../src/lib/db/dev-db-share-button';
 
 export default function HomeScreen() {
   const menuItems = [
@@ -15,9 +16,9 @@ export default function HomeScreen() {
   };
 
   return (
-    <View className="flex-1 bg-gray-100 p-6">
+    <View className="bg-gray-100 flex-1 p-6">
       <Text className="mb-8 mt-12 text-center text-3xl font-bold">작업용홈화면</Text>
-
+      <DevDbShareButton />
       <View className="flex-row flex-wrap justify-between">
         {menuItems.map((item, index) => (
           <TouchableOpacity

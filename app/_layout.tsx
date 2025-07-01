@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import '../global.css';
 import { SplashScreen, Stack } from 'expo-router';
 import { useFonts } from 'expo-font';
+import { useInitializeDatabase } from '../src/hooks/use-initialize-database';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -9,6 +10,8 @@ export default function RootLayout() {
   const [fontsLoaded] = useFonts({
     pretendard: require('../assets/fonts/pretendard.ttf'),
   });
+
+  useInitializeDatabase();
 
   useEffect(() => {
     if (fontsLoaded) {
