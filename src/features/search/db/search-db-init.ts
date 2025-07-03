@@ -5,12 +5,13 @@ export const searchDbInit = async () => {
     PRAGMA foreign_keys = ON;
     PRAGMA journal_mode = WAL;
     
-    CREATE TABLE IF NOT EXISTS media (
+    CREATE TABLE IF NOT EXISTS search (
       id INTEGER PRIMARY KEY NOT NULL, 
-      item_id INTEGER NOT NULL,
-      image_url BLOB NOT NULL, 
-      created_at TEXT DEFAULT (datetime('now')),
-      FOREIGN KEY (item_id) REFERENCES items(id) ON DELETE CASCADE
+      name TEXT NOT NULL,
+      category TEXT NOT NULL,
+      location TEXT NOT NULL,
+      description TEXT,
+      created_at TEXT DEFAULT (datetime('now'))
     );
   `);
 };
