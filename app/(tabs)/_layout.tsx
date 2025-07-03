@@ -44,7 +44,7 @@ export default function TabLayout() {
       <MaterialTopTabs.Screen name="diary/index" options={{ title: '일기' }} />
       <MaterialTopTabs.Screen name="schedule/index" options={{ title: '일정' }} />
       <MaterialTopTabs.Screen name="routine/index" options={{ title: '루틴' }} />
-      <MaterialTopTabs.Screen name="search/index" options={{ title: '물건찾기' }} />
+      <MaterialTopTabs.Screen name="search" options={{ title: '물건찾기' }} />
       <MaterialTopTabs.Screen name="address-book/index" options={{ title: '주소록' }} />
     </MaterialTopTabs>
   );
