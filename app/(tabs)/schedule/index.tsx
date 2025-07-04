@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, ScrollView, SafeAreaView, Image } from 'r
 import { Calendar, Check, BellRing, BellOff } from 'lucide-react-native';
 import { router } from 'expo-router';
 import { Colors } from '../../../src/constants/colors';
+import AddButton from 'src/components/ui/add-button';
 
 type TaskItemProps = {
   time: string;
@@ -150,12 +151,7 @@ const SchedulePage = () => {
       </ScrollView>
 
       {/* Floating Action Button */}
-      <TouchableOpacity
-        className="absolute bottom-8 right-6 h-16 w-16 items-center justify-center rounded-full bg-paleCobalt"
-        onPress={() => handlePress()}
-      >
-        <Text className="text-5xl font-light text-white">+</Text>
-      </TouchableOpacity>
+      <AddButton onPress={handlePress} />
     </SafeAreaView>
   );
 };
