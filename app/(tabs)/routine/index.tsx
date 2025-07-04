@@ -4,15 +4,21 @@ import AddButton from 'src/components/ui/add-button';
 import CheckBox from 'src/components/ui/checkbox';
 import Label from 'src/components/ui/label';
 import Modal from 'src/components/ui/modal';
+import Calendar from 'src/components/ui/calendar';
 import { useRouter } from 'expo-router';
 
 const RoutineMain = () => {
   const router = useRouter();
   const [checked, setChecked] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(new Date());
 
   return (
-    <View className="flex-1 items-center justify-center bg-white">
+    <View className="justify-top flex-1 items-center bg-white">
+      {/* 상단 달력 */}
+      <View className="mb-6 mt-4 w-full px-4">
+        <Calendar selectedDate={selectedDate} onChange={setSelectedDate} />
+      </View>
       {/* 테스트 코드 시작 */}
       <Label className="mb-4">공통 라벨 예시</Label>
       <View className="mb-4 flex-row items-center">
