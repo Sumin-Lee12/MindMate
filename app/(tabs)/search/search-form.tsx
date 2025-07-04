@@ -12,33 +12,49 @@ import { useState } from 'react';
 import SearchLabelInput from '@/src/features/search/components/search-label-input';
 import SearchCategoryPicker from '@/src/features/search/components/search-category-picker';
 import ImageAddButton from '@/src/components/ui/image-button';
+import { db } from '@/src/hooks/use-initialize-database';
 
 const SearchForm = () => {
   const [name, setName] = useState('');
   const [location, setLocation] = useState('');
-  const [detailLocation, setDetailLocation] = useState('');
+  const [description, setdescription] = useState('');
 
   // dropdown 상태
   const [open, setOpen] = useState(false);
   const [category, setCategory] = useState(null);
   const [items, setItems] = useState([
-    { label: '개인용품', value: 'personal' },
-    { label: '모바일', value: 'mobile' },
-    { label: '전자기기', value: 'electronics' },
-    { label: '주방용품', value: 'kitchen' },
+    { label: '개인용품', value: '개인용품' },
+    { label: '모바일', value: '모바일' },
+    { label: '전자제품', value: '전자제품' },
+    { label: '주방용품', value: '주방용품' },
   ]);
 
-  const handleSubmit = () => {
-    const formData = { name, category, location, detailLocation };
-    clenarSearchForm();
-    console.log('Form Data:', formData);
+  const handleSubmit = async () => {
+    if (!name || !category || !location || !description) {
+      console.error('모든 필드를 입력해 주세요');
+      return;
+    }
+    try {
+      await db.runAsync(
+        `
+        INSERT INTO search (name, category, location, description)
+        VALUES (?, ?, ?, ?)
+      `,
+        [name, category, location, description],
+      );
+      clenarSearchForm();
+      console.log('Search form submitted successfully');
+    } catch (error) {
+      console.error('Error submitting search form:', error);
+      return;
+    }
   };
 
   // 폼 초기화 함수
   const clenarSearchForm = () => {
     setName('');
     setLocation('');
-    setDetailLocation('');
+    setdescription('');
     setCategory(null);
     setOpen(false);
     setItems([
@@ -90,8 +106,8 @@ const SearchForm = () => {
             <SearchLabelInput
               label="상세 위치"
               placeholder="상세 위치를 입력해 주세요"
-              value={detailLocation}
-              onChangeText={setDetailLocation}
+              value={description}
+              onChangeText={setdescription}
               className="h-32"
               multiline
             />
