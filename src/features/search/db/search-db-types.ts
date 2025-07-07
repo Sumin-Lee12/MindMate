@@ -6,3 +6,8 @@ export type SearchData = {
   description?: string;
   created_at?: string;
 };
+
+export type SearchCategoryLabel = {
+  label: string;
+  value: string;
+};
