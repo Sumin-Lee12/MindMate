@@ -48,7 +48,7 @@ const RoutineMain = () => {
   };
 
   return (
-    <View className="relative flex-1 bg-[#F5F7FB]">
+    <View className="relative flex-1 bg-turquoise">
       {/* 상단 달력 */}
       <View className="px-4 pb-4 pt-8">
         <Calendar selectedDate={selectedDate} onChange={setSelectedDate} />

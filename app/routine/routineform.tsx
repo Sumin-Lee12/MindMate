@@ -74,20 +74,20 @@ const RoutineForm = () => {
 
   if (!routineData) {
     return (
-      <View className="flex-1 items-center justify-center bg-[#F5F7FB]">
-        <Text className="text-lg text-[#7B88A8]">로딩 중...</Text>
+      <View className="flex-1 items-center justify-center bg-turquoise">
+        <Text className="text-lg text-gray">로딩 중...</Text>
       </View>
     );
   }
 
   return (
-    <View className="flex-1 bg-[#F5F7FB]">
+    <View className="flex-1 bg-turquoise">
       {/* 헤더 */}
       <View className="flex-row items-center justify-between bg-white px-4 py-3 shadow-sm">
         <TouchableOpacity onPress={() => router.back()}>
           <Ionicons name="arrow-back" size={24} color="#576BCD" />
         </TouchableOpacity>
-        <Text className="text-lg font-bold text-[#222B45]">루틴 상세</Text>
+        <Text className="text-lg font-bold text-black">루틴 상세</Text>
         <TouchableOpacity onPress={() => router.push(`/routine/${routineData.id}`)}>
           <Ionicons name="create-outline" size={24} color="#576BCD" />
         </TouchableOpacity>
@@ -98,8 +98,8 @@ const RoutineForm = () => {
         <View className="mb-6 rounded-xl bg-white p-4 shadow-sm">
           <View className="mb-4 flex-row items-start justify-between">
             <View className="flex-1">
-              <Text className="mb-2 text-xl font-bold text-[#222B45]">{routineData.title}</Text>
-              <Text className="text-sm text-[#7B88A8]">{routineData.description}</Text>
+              <Text className="mb-2 text-xl font-bold text-black">{routineData.title}</Text>
+              <Text className="text-sm text-gray">{routineData.description}</Text>
             </View>
             {routineData.image && (
               <Image
@@ -122,14 +122,14 @@ const RoutineForm = () => {
         {/* 하위 작업 섹션 */}
         <View className="mb-6">
           <View className="mb-3 flex-row items-center justify-between">
-            <Text className="text-lg font-bold text-[#222B45]">하위 작업</Text>
+            <Text className="text-lg font-bold text-black">하위 작업</Text>
             <View className="flex-row items-center gap-2">
-              <Text className="text-sm text-[#7B88A8]">
+              <Text className="text-sm text-gray">
                 {subTaskChecks.filter(Boolean).length}/{subTaskChecks.length}
               </Text>
-              <View className="h-2 w-16 rounded-full bg-[#E6EBF7]">
+              <View className="h-2 w-16 rounded-full bg-foggyBlue">
                 <View
-                  className="h-2 rounded-full bg-[#576BCD]"
+                  className="h-2 rounded-full bg-paleCobalt"
                   style={{
                     width: `${(subTaskChecks.filter(Boolean).length / subTaskChecks.length) * 100}%`,
                   }}
@@ -156,13 +156,13 @@ const RoutineForm = () => {
           <TouchableOpacity
             onPress={handleCompleteRoutine}
             className={`rounded-xl py-4 ${
-              subTaskChecks.every(Boolean) ? 'bg-[#576BCD]' : 'bg-[#E6EBF7]'
+              subTaskChecks.every(Boolean) ? 'bg-paleCobalt' : 'bg-foggyBlue'
             }`}
             disabled={!subTaskChecks.every(Boolean)}
           >
             <Text
               className={`text-center font-bold ${
-                subTaskChecks.every(Boolean) ? 'text-white' : 'text-[#B0B8CC]'
+                subTaskChecks.every(Boolean) ? 'text-white' : 'text-gray'
               }`}
             >
               {subTaskChecks.every(Boolean) ? '루틴 완료!' : '모든 하위 작업을 완료해주세요'}
@@ -179,7 +179,7 @@ const RoutineForm = () => {
             className="flex-row items-center justify-center rounded-xl bg-white py-3 shadow-sm"
           >
             <Ionicons name="share-outline" size={20} color="#576BCD" />
-            <Text className="ml-2 font-medium text-[#576BCD]">루틴 공유</Text>
+            <Text className="ml-2 font-medium text-paleCobalt">루틴 공유</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -189,7 +189,7 @@ const RoutineForm = () => {
             className="flex-row items-center justify-center rounded-xl bg-white py-3 shadow-sm"
           >
             <Ionicons name="analytics-outline" size={20} color="#576BCD" />
-            <Text className="ml-2 font-medium text-[#576BCD]">통계 보기</Text>
+            <Text className="ml-2 font-medium text-paleCobalt">통계 보기</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>

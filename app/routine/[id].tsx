@@ -43,26 +43,24 @@ const RoutineDetail = () => {
   };
 
   return (
-    <View className="flex-1 bg-[#F5F7FB]">
+    <View className="flex-1 bg-turquoise">
       {/* 헤더 */}
       <View className="flex-row items-center justify-between bg-white px-4 py-3 shadow-sm">
         <TouchableOpacity onPress={() => router.back()}>
           <Ionicons name="arrow-back" size={24} color="#576BCD" />
         </TouchableOpacity>
-        <Text className="text-lg font-bold text-[#222B45]">
-          {isEdit ? '루틴 수정' : '루틴 생성'}
-        </Text>
+        <Text className="text-lg font-bold text-black">{isEdit ? '루틴 수정' : '루틴 생성'}</Text>
         <View className="w-6" />
       </View>
 
       <ScrollView className="flex-1 px-4 py-4">
         {/* 기본 정보 */}
         <View className="mb-6">
-          <Text className="mb-3 text-lg font-bold text-[#222B45]">기본 정보</Text>
+          <Text className="mb-3 text-lg font-bold text-black">기본 정보</Text>
 
           {/* 루틴 이름 */}
           <View className="mb-4">
-            <Text className="mb-2 text-sm font-medium text-[#5B6B9A]">루틴 이름</Text>
+            <Text className="mb-2 text-sm font-medium text-gray">루틴 이름</Text>
             <TextInput
               value={title}
               onChangeText={setTitle}
@@ -74,7 +72,7 @@ const RoutineDetail = () => {
 
           {/* 루틴 상세 */}
           <View className="mb-4">
-            <Text className="mb-2 text-sm font-medium text-[#5B6B9A]">루틴 상세</Text>
+            <Text className="mb-2 text-sm font-medium text-gray">루틴 상세</Text>
             <TextInput
               value={description}
               onChangeText={setDescription}
@@ -89,7 +87,7 @@ const RoutineDetail = () => {
           {/* 하위 작업 */}
           <View className="mb-4">
             <View className="mb-2 flex-row items-center justify-between">
-              <Text className="text-sm font-medium text-[#5B6B9A]">하위 작업</Text>
+              <Text className="text-sm font-medium text-gray">하위 작업</Text>
               <TouchableOpacity onPress={addSubTask}>
                 <Ionicons name="add-circle-outline" size={24} color="#576BCD" />
               </TouchableOpacity>
@@ -120,7 +118,7 @@ const RoutineDetail = () => {
 
           {/* 사진 추가 */}
           <View className="mb-4">
-            <Text className="mb-2 text-sm font-medium text-[#5B6B9A]">사진</Text>
+            <Text className="mb-2 text-sm font-medium text-gray">사진</Text>
             <TouchableOpacity
               onPress={() => setShowImagePicker(true)}
               className="flex-row items-center justify-center rounded-xl border-2 border-dashed border-[#B0B8CC] bg-white py-8"
@@ -133,12 +131,12 @@ const RoutineDetail = () => {
 
         {/* 옵션 설정 */}
         <View className="mb-6">
-          <Text className="mb-3 text-lg font-bold text-[#222B45]">옵션 설정</Text>
+          <Text className="mb-3 text-lg font-bold text-black">옵션 설정</Text>
 
           {/* 반복 설정 */}
           <View className="mb-4">
             <View className="mb-2 flex-row items-center justify-between">
-              <Text className="text-sm font-medium text-[#5B6B9A]">반복</Text>
+              <Text className="text-sm font-medium text-gray">반복</Text>
               <TouchableOpacity onPress={() => setShowRepeatInfo(true)}>
                 <Ionicons name="information-circle-outline" size={20} color="#576BCD" />
               </TouchableOpacity>
@@ -154,13 +152,13 @@ const RoutineDetail = () => {
 
           {/* 알림 시간 */}
           <View className="mb-4">
-            <Text className="mb-2 text-sm font-medium text-[#5B6B9A]">알림 시간</Text>
+            <Text className="mb-2 text-sm font-medium text-gray">알림 시간</Text>
             <AlarmTimePicker value={alarmTime} onChange={setAlarmTime} />
           </View>
 
           {/* 소요 시간 */}
           <View className="mb-4">
-            <Text className="mb-2 text-sm font-medium text-[#5B6B9A]">소요 시간</Text>
+            <Text className="mb-2 text-sm font-medium text-gray">소요 시간</Text>
             <TextInput
               value={duration}
               onChangeText={setDuration}
@@ -178,7 +176,7 @@ const RoutineDetail = () => {
           onPress={() => router.back()}
           className="flex-1 rounded-xl border border-[#B0B8CC] py-3"
         >
-          <Text className="text-center font-medium text-[#5B6B9A]">취소</Text>
+          <Text className="text-center font-medium text-gray">취소</Text>
         </TouchableOpacity>
         <TouchableOpacity
           onPress={() => {
