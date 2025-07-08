@@ -22,12 +22,10 @@ const SearchLabelInput = ({
   errors,
 }: SearchLabelInputProps) => {
   return (
-    <View
-      className={`h-${errors ? 28 : 20} w-full items-start justify-center gap-2 ${className}`}
-    >
-      <Text className="text-md text-paleCobalt">{label}</Text>
+    <View className={`mb-9 w-full items-start justify-center gap-2 ${className}`}>
+      <Text className="text-lg text-paleCobalt">{label}</Text>
       <TextInput
-        className="w-full flex-1 rounded-xl bg-white px-4 text-sm shadow-dropShadow"
+        className={`w-full rounded-xl bg-white px-4 text-sm shadow-dropShadow ${multiline ? 'h-24 py-2' : 'h-[52px]'}`}
         placeholder={placeholder}
         value={value}
         onChangeText={onChangeText}
@@ -35,7 +33,9 @@ const SearchLabelInput = ({
         onBlur={onBlur}
         textAlignVertical={multiline ? 'top' : 'center'}
       />
-      {errors && <Text className="text-ss text-red-500">{errors}</Text>}
+      <View className="h-5">
+        {errors && <Text className="text-ss text-red-500">{errors}</Text>}
+      </View>
     </View>
   );
 };
