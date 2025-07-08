@@ -3,17 +3,24 @@ import Button from '@/src/components/ui/button';
 import { useState } from 'react';
 import SearchLabelInput from '@/src/features/search/components/search-label-input';
 import SearchCategoryPicker from '@/src/features/search/components/search-category-picker';
-import ImageAddButton from '@/src/components/ui/image-button';
 import { db } from '@/src/hooks/use-initialize-database';
 import { searchCategoryLabels } from '@/src/features/search/constants/search-category-constants';
 import { SearchCategoryLabel } from '@/src/features/search/db/search-db-types';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'expo-router';
+import * as ImagePicker from 'expo-image-picker';
 import { SearchFormSchema, searchFormSchema } from '@/src/features/search/utils/search-form-schema';
+import ImageButton from '@/src/components/ui/image-button';
+
+type ImageType = {
+  uri: string;
+  type: 'image' | 'video' | 'livePhoto' | 'pairedVideo' | undefined;
+};
 
 const SearchForm = () => {
   const router = useRouter();
+  const [images, setImages] = useState<ImageType[]>([]);
 
   // dropdown 상태
   const [open, setOpen] = useState(false);
@@ -39,13 +46,26 @@ const SearchForm = () => {
 
   const handleFormSubmit = async (data: SearchFormSchema) => {
     try {
-      await db.runAsync(
+      const { lastInsertRowId } = await db.runAsync(
         `
         INSERT INTO search (name, category, location, description)
         VALUES (?, ?, ?, ?)
       `,
         [data.name, data.category, data.location, data.description ?? null],
       );
+      if (images.length > 0) {
+        await Promise.all(
+          images.map((image) =>
+            db.runAsync(
+              `
+            INSERT INTO media (owner_type, owner_id, media_type, file_path)
+            VALUES (?, ?, ?, ?)
+          `,
+              ['search', lastInsertRowId, image.type ?? null, image.uri],
+            ),
+          ),
+        );
+      }
       router.back();
     } catch (error) {
       console.error('폼 제출 오류:', error);
@@ -53,8 +73,33 @@ const SearchForm = () => {
     }
   };
 
-  const handleAddImage = () => {
-    console.log('Image button pressed');
+  const handleAddImage = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      alert('시스템 설정에서 갤러리 접근 권한을 허용해 주세요.');
+      return;
+    }
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images', 'videos', 'livePhotos'],
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 1,
+      });
+      if (!result.canceled) {
+        const uri = result.assets[0].uri;
+        const type = result.assets[0].type;
+        const newImage = { uri, type };
+        setImages((prev) => [...prev, newImage]);
+      }
+    } catch (error) {
+      alert('이미지 업로드 에러' + error);
+    }
+  };
+
+  // 이미지 삭제
+  const handleRemoveImage = (idx: number) => {
+    return setImages((prev) => prev.filter((_, i) => i !== idx));
   };
 
   return (
@@ -127,18 +172,22 @@ const SearchForm = () => {
                 />
               )}
             />
-            <View className="mb-5 w-full items-center">
-              <ImageAddButton onPress={handleAddImage} />
+
+            <View className="h-28 w-full items-start justify-center gap-2">
+              <Text className="text-md text-paleCobalt">사진</Text>
+              <View className="flex flex-row gap-2">
+                {images.map((image, idx) => (
+                  <ImageButton key={idx} onPress={() => handleRemoveImage(idx)} image={image.uri} />
+                ))}
+                {images.length < 3 && <ImageButton onPress={handleAddImage} />}
+              </View>
             </View>
           </View>
 
           <View className="w-full flex-1 items-center">
             <Button
               className="w-3/4 rounded-lg bg-blue-500 px-4 py-2"
-              onPress={handleSubmit(handleFormSubmit, (error) => {
-                console.error('폼 제출 오류 (react-hook-form):', error);
-                return;
-              })}
+              onPress={handleSubmit(handleFormSubmit)}
             >
               <Text className="text-center text-lg text-white">등록하기</Text>
             </Button>
