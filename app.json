@@ -27,7 +27,14 @@
       "bundler": "metro"
     },
     "plugins": [
-      "expo-sqlite"
+      "expo-sqlite",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "This app uses the photo library to select images.",
+          "cameraPermission": "This app uses the camera to take photos."
+        }
+      ]
     ],
     "extra": {
       "eas": {
