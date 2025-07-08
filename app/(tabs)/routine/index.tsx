@@ -36,6 +36,11 @@ const RoutineMain = () => {
     router.push(`/routine/${id}`);
   };
 
+  // 루틴 상세 페이지로 이동
+  const handleViewRoutine = (id: number) => {
+    router.push(`/routine/routineform?id=${id}`);
+  };
+
   // 루틴 삭제
   const handleDeleteRoutine = (id: number) => {
     /* TODO: 루틴 삭제 로직 */
@@ -57,6 +62,7 @@ const RoutineMain = () => {
             title={routine.title}
             time={routine.time}
             duration={routine.duration}
+            onPress={() => handleViewRoutine(routine.id)}
             onEdit={() => handleEditRoutine(routine.id)}
             onDelete={() => handleDeleteRoutine(routine.id)}
           />

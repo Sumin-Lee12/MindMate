@@ -7,6 +7,7 @@ import { Pencil, Trash } from 'lucide-react-native';
  * @param title - 루틴 이름
  * @param time - 시간
  * @param duration - 기간/소요시간
+ * @param onPress - 카드 클릭 시 콜백
  * @param onEdit - 편집 아이콘 클릭 시 콜백
  * @param onDelete - 삭제 아이콘 클릭 시 콜백
  * @param className - 추가 스타일 클래스
@@ -15,6 +16,7 @@ type RoutineListCardProps = {
   title: string;
   time: string;
   duration: string;
+  onPress?: () => void;
   onEdit?: () => void;
   onDelete?: () => void;
   className?: string;
@@ -24,12 +26,15 @@ const RoutineListCard = ({
   title,
   time,
   duration,
+  onPress,
   onEdit,
   onDelete,
   className = '',
 }: RoutineListCardProps) => {
   return (
-    <View
+    <TouchableOpacity
+      onPress={onPress}
+      activeOpacity={0.8}
       className={`mb-3 flex-row items-stretch rounded-xl bg-white shadow-dropShadow ${className}`}
     >
       {/* 좌측 색상 bar */}
@@ -57,7 +62,7 @@ const RoutineListCard = ({
           </View>
         </View>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 };
 
