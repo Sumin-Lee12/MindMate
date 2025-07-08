@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, ScrollView } from 'react-native';
+import { useRouter } from 'expo-router';
 import AddButton from 'src/components/ui/add-button';
 import Calendar from 'src/components/ui/calendar';
 import RoutineListCard from 'src/features/routine/components/RoutineListCard';
@@ -22,7 +23,24 @@ const routineList = [
 ];
 
 const RoutineMain = () => {
+  const router = useRouter();
   const [selectedDate, setSelectedDate] = useState(new Date());
+
+  // 루틴 생성 페이지로 이동
+  const handleCreateRoutine = () => {
+    router.push('/routine/new');
+  };
+
+  // 루틴 수정 페이지로 이동
+  const handleEditRoutine = (id: number) => {
+    router.push(`/routine/${id}`);
+  };
+
+  // 루틴 삭제
+  const handleDeleteRoutine = (id: number) => {
+    /* TODO: 루틴 삭제 로직 */
+    console.log('Delete routine:', id);
+  };
 
   return (
     <View className="relative flex-1 bg-[#F5F7FB]">
@@ -39,22 +57,14 @@ const RoutineMain = () => {
             title={routine.title}
             time={routine.time}
             duration={routine.duration}
-            onEdit={() => {
-              /* TODO: 편집 */
-            }}
-            onDelete={() => {
-              /* TODO: 삭제 */
-            }}
+            onEdit={() => handleEditRoutine(routine.id)}
+            onDelete={() => handleDeleteRoutine(routine.id)}
           />
         ))}
       </ScrollView>
 
       {/* 플로팅 액션 버튼 */}
-      <AddButton
-        onPress={() => {
-          /* TODO: 루틴 생성 이동 */
-        }}
-      />
+      <AddButton onPress={handleCreateRoutine} />
     </View>
   );
 };
