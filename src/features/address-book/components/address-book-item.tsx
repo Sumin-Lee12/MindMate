@@ -6,8 +6,9 @@ import AddressBookName from './address-book-name';
 import { Mail, Phone } from 'lucide-react-native';
 import AddressBookContent from './address-book-content';
 import AddressBookImage from './address-book-image';
+import { Contact } from '../types/address-book-type';
 
-const AddressBookItem = () => {
+const AddressBookItem = ({ contact }: { contact: Contact }) => {
   return (
     <CommonBox color="paleCobalt">
       {/* 상단 부분 */}
@@ -18,7 +19,7 @@ const AddressBookItem = () => {
           <AddressBookLabel>친구</AddressBookLabel>
         </View>
         <View className="flex-row items-start justify-between">
-          <AddressBookName>아무</AddressBookName>
+          <AddressBookName>{contact.name}</AddressBookName>
         </View>
         {/* TODO 햄버거 만들기 */}
       </View>
@@ -32,7 +33,7 @@ const AddressBookItem = () => {
         {/* 텍스트 정보 */}
         <View className="flex-[2]">
           {/* 한줄 상세 설명 */}
-          <AddressBookContent>우리딸 나랑 사이가 좋아요.</AddressBookContent>
+          <AddressBookContent>{contact.memo}</AddressBookContent>
 
           {/* 버튼 */}
           <View className="mt-3 flex-row gap-2">
