@@ -3,34 +3,36 @@ import CommonBox from '@components/ui/common-box';
 import SearchCategoryButton from './search-category-button';
 import { router } from 'expo-router';
 import { ChevronRight } from 'lucide-react-native';
+import { getCategoryData } from '../utils/getCategoryData';
 
 type SearchItemCardProps = {
-  id?: string;
+  id: string;
+  category: string;
+  name: string;
+  location: string;
 };
 
-const SearchItemCard = ({ id }: SearchItemCardProps) => {
+const SearchItemCard = ({ id, category, name, location }: SearchItemCardProps) => {
   const handlePress = () => {
     router.push(`./search/${id}`);
   };
 
+  const { color } = getCategoryData(category);
+
   return (
-    <CommonBox color="paleCobalt">
-      {/**Todo
-       * 추후 id를 이용해 commonbox의 색상을 변경할 수 있도록 구현
-       * 현재는 id가 없으면 기본 색상으로 설정되어 있음
-       */}
+    <CommonBox color={color}>
       <TouchableOpacity onPress={handlePress}>
         <View className="flex-row items-center ">
           <View className="mr-4">
-            <SearchCategoryButton label="개인용품" />
+            <SearchCategoryButton label={category} />
           </View>
 
           <View className="flex-1">
             <View className="mb-1 flex-row items-center gap-2">
-              <Text className="text-lg font-bold ">열쇠</Text>
-              <Text className="w-24 rounded-md bg-foggyBlue text-center text-ss">개인용품</Text>
+              <Text className="text-lg font-bold ">{name}</Text>
+              <Text className={`w-24 rounded-md bg-${color} text-center text-ss`}>{category}</Text>
             </View>
-            <Text className="text-md text-gray">현관 신발장 위</Text>
+            <Text className="text-md text-gray">{location}</Text>
           </View>
 
           <TouchableOpacity>
