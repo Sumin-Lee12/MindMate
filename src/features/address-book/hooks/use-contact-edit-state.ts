@@ -1,7 +1,7 @@
 import { Contact } from '../types/address-book-type';
 import { useCallback, useEffect, useState } from 'react';
 import { useAsyncDataGet } from '@/src/hooks/use-async-data-get';
-import { getContactById } from '../services/get-address-book-data';
+import { getContactById } from '../services/get-contact-data';
 
 export const useContactEditState = (id: string) => {
   const [name, setName] = useState('');
