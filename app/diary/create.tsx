@@ -9,8 +9,8 @@ import {
   Image,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { ChevronLeft, Image as ImageIcon, Video, Mic, X } from 'lucide-react-native';
-import { Colors } from '../../src/constants/colors'
+import { ChevronLeft, Smile, Clock, Image as ImageIcon, Video, Mic, X } from 'lucide-react-native';
+import { Colors } from '../../src/constants/colors';
 
 /**
  * 일기 작성 페이지 컴포넌트
@@ -26,9 +26,9 @@ const DiaryCreatePage = () => {
     { emoji: '😊', label: '기쁨' },
     { emoji: '😢', label: '슬픔' },
     { emoji: '😡', label: '화남' },
-    { emoji: '😨', label: '두려움' },
-    { emoji: '😲', label: '놀람' },
-    { emoji: '🤢', label: '역겨움' },
+    { emoji: '😌', label: '평온' },
+    { emoji: '😴', label: '피곤' },
+    { emoji: '😍', label: '사랑' },
   ];
 
   /**
@@ -65,7 +65,7 @@ const DiaryCreatePage = () => {
     <SafeAreaView className="flex-1 bg-turquoise">
       <ScrollView className="flex-1">
         {/* 헤더 */}
-        <View className="flex-row items-center justify-between px-4 py-4 mt-8 border-b-2 border-foggyBlue bg-white">
+        <View className="mt-8 flex-row items-center justify-between border-b-2 border-foggyBlue bg-white px-4 py-4">
           <TouchableOpacity onPress={handleBack}>
             <ChevronLeft size={24} color={Colors.paleCobalt} />
           </TouchableOpacity>
@@ -125,13 +125,13 @@ const DiaryCreatePage = () => {
 
           {/* 날짜 시간 표시 */}
           <View className="mb-4 flex-row items-center gap-2">
-            <View className="h-8 w-8 rounded-full bg-gray" />
+            <Clock size={20} color={Colors.paleCobalt} />
             <Text className="text-sm text-gray">2025. 6. 7. 토요일 오후 8: 05</Text>
           </View>
 
           {/* 오늘의 기분 */}
           <View className="mb-6 flex-row items-center gap-2">
-            <View className="h-8 w-8 rounded-full bg-gray" />
+            <Smile size={20} color={Colors.paleCobalt} />
             <Text className="text-sm text-gray">오늘의 기분</Text>
           </View>
 
@@ -160,7 +160,7 @@ const DiaryCreatePage = () => {
       </ScrollView>
 
       {/* 하단 버튼 */}
-      <View className="flex-row gap-4 border-t border-foggyBlue bg-white px-4 py-4 mb-12">
+      <View className="mb-12 flex-row gap-4 border-t border-foggyBlue bg-white px-4 py-4">
         <TouchableOpacity
           onPress={handleSubmit}
           className="flex-1 items-center justify-center rounded-lg bg-paleCobalt py-4"
