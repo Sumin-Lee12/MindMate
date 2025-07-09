@@ -26,7 +26,6 @@ import { insertSearch } from '@/src/features/search/search-services';
 const SearchForm = () => {
   const router = useRouter();
   const [images, setImages] = useState<MediaType[]>([]);
-  const [id, setId] = useState(0);
 
   // dropdown 상태
   const [open, setOpen] = useState(false);
@@ -55,9 +54,8 @@ const SearchForm = () => {
     try {
       await db.withTransactionAsync(async () => {
         const lastInsertRowId = await insertSearch(data);
-        setId(lastInsertRowId);
         if (images.length > 0) {
-          await insertMedia(images, 'search', id);
+          await insertMedia(images, 'search', lastInsertRowId);
         }
       });
       router.back();
