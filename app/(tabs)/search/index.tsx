@@ -4,17 +4,24 @@ import SearchCategoryButton from '@/src/features/search/components/search-catego
 import SearchItemCard from '@/src/features/search/components/search-item-card';
 import { searchCategories } from '@/src/features/search/constants/search-category-constants';
 import { useFocusEffect, useRouter } from 'expo-router';
-import { useCallback, useState } from 'react';
+import { useCallback, useState, useEffect } from 'react';
 import { db } from '@/src/hooks/use-initialize-database';
 import { SearchData } from '@/src/features/search/db/search-db-types';
-import Button from '@/src/components/ui/button';
 
 const HomeScreen = () => {
   const [items, setItems] = useState<SearchData[]>([]);
+  const [filteredItems, setFilteredItems] = useState<SearchData[]>([]);
+  const [search, setSearch] = useState('');
   const router = useRouter();
 
   const handleCreateItem = () => {
     router.push('/(tabs)/search/search-form');
+  };
+
+  // search 테이블 데이터 가져오기
+  const getSearchItems = async () => {
+    const allItems = (await db.getAllAsync(`SELECT * FROM search`)) as SearchData[];
+    setItems(allItems);
   };
 
   useFocusEffect(
@@ -23,41 +30,40 @@ const HomeScreen = () => {
     }, []),
   );
 
-  const getSearchItems = async () => {
-    const items = (await db.getAllAsync(`SELECT * FROM search`)) as SearchData[];
-    const data = await db.getAllAsync(`SELECT * FROM media`);
-    console.log(data);
-    setItems(items);
-    // console.log('Search items:', items);
+  useEffect(() => {
+    if (!search) {
+      setFilteredItems(items);
+    }
+  }, [search, items]);
+
+  // 검색 로직
+  const filterItems = () => {
+    const filtered = items.filter((item) => item.name.toLowerCase().includes(search.toLowerCase()));
+    setFilteredItems(filtered);
   };
 
-  const resetTable = async () => {
-    await db.runAsync(`
-      DELETE FROM search
-    `);
-    await db.runAsync(`
-      DELETE FROM media
-    `);
+  // 카테고리 필터링
+  const filterByCategory = (category: string) => {
+    const filtered = items.filter((item) => item.category === category);
+    setFilteredItems(filtered);
   };
 
   return (
     //홈화면
-    <View className="items-center justify-center bg-turquoise p-4">
+    <View className="flex-1 items-center justify-center bg-turquoise p-4">
       <View className="mb-4 w-full">
-        <SearchInput />
+        <SearchInput value={search} onChange={setSearch} onSubmitEditing={filterItems} />
       </View>
 
       <View className="mb-8 w-full flex-row justify-between">
         {searchCategories.map((category, index) => (
-          <SearchCategoryButton key={index} label={category.label} />
+          <SearchCategoryButton key={index} label={category.label} onPress={filterByCategory} />
         ))}
       </View>
-      <Button onPress={resetTable}>
-        <Text>초기화</Text>
-      </Button>
+
       <ScrollView className="w-full">
         <View className="w-full gap-4">
-          {items.map((item) => (
+          {filteredItems.map((item) => (
             <SearchItemCard
               key={item.id}
               id={item.id}
