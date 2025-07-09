@@ -5,6 +5,11 @@ export const useAsyncDataGet = <T>(getFn: () => Promise<T>) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const isMountedRef = useRef(true);
+  const [isRefetch, setIsRefetch] = useState(false);
+
+  const refetch = () => {
+    setIsRefetch(!isRefetch);
+  };
 
   useEffect(() => {
     return () => {
@@ -31,11 +36,11 @@ export const useAsyncDataGet = <T>(getFn: () => Promise<T>) => {
         setLoading(false);
       }
     }
-  }, [getFn]);
+  }, [getFn, isRefetch]);
 
   useEffect(() => {
     fetchData();
   }, [fetchData]);
 
-  return { data, loading, error };
+  return { data, loading, error, refetch };
 };
