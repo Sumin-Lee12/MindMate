@@ -3,7 +3,7 @@ import { db } from '@/src/hooks/use-initialize-database';
 import { getNoteGroupsByContactId } from './get-note-group-data';
 
 // 노트 그룹 생성
-export const createNoteGroup = async (contactId: number, title: string): Promise<NoteGroup> => {
+export const createNoteGroup = async (contactId: string, title: string): Promise<NoteGroup> => {
   try {
     const result = await db.runAsync('INSERT INTO note_group (contact_id, title) VALUES (?, ?)', [
       contactId,
