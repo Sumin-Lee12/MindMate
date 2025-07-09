@@ -1,5 +1,8 @@
 import { db } from '../../../hooks/use-initialize-database';
 
+/**
+ * 일기 DB 초기화 함수
+ */
 export const diaryDbInit = async () => {
   await db.execAsync(`
     PRAGMA foreign_keys = ON;

@@ -15,15 +15,15 @@ export type DiaryTableType = {
   /** 폰트 패밀리 */
   font: string | null;
   /** 폰트 크기 */
-  fontSize: number | null;
+  font_size: number | null;
   /** 텍스트 정렬 */
-  textAlign: string | null;
+  text_align: string | null;
   /** 텍스트 색상 */
-  textColor: string | null;
+  text_color: string | null;
   /** 배경 색상 */
-  backgroundColor: string | null;
+  background_color: string | null;
   /** 오디오 파일 URI */
-  audioUri: string | null;
+  audio_uri: string | null;
   /** 기분/감정 */
   mood: string | null;
   /** 생성 일시 */
@@ -81,7 +81,7 @@ export type DiaryUpdateDbPayloadType = Partial<DiaryCreateDbPayloadType> & {
   /** 일기 ID */
   id: number;
   /** 수정 일시 */
-  updatedAt: string;
+  updatedAt?: string;
 };
 
 /**

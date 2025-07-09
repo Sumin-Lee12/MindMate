@@ -14,7 +14,8 @@ import {
  */
 export class DiaryService {
   /**
-   * 모든 일기 조회
+   * 모든 일기를 조회합니다
+   * @returns 일기 목록 (최신순 정렬)
    */
   static async getAllDiaries(): Promise<DiaryTableType[]> {
     try {
@@ -29,7 +30,9 @@ export class DiaryService {
   }
 
   /**
-   * 특정 일기 조회
+   * 특정 일기를 조회합니다
+   * @param id - 일기 ID
+   * @returns 일기 정보 또는 null
    */
   static async getDiaryById(id: number): Promise<DiaryTableType | null> {
     try {
@@ -44,7 +47,9 @@ export class DiaryService {
   }
 
   /**
-   * 일기 검색 (필터 적용)
+   * 일기를 검색합니다 (필터 적용)
+   * @param filter - 검색 필터 옵션
+   * @returns 필터링된 일기 목록
    */
   static async searchDiaries(filter: DiarySearchDbFilterType): Promise<DiaryTableType[]> {
     try {
@@ -115,7 +120,9 @@ export class DiaryService {
   }
 
   /**
-   * 일기 생성
+   * 새로운 일기를 생성합니다
+   * @param input - 일기 생성 데이터
+   * @returns 생성된 일기의 ID
    */
   static async createDiary(input: DiaryCreateDbPayloadType): Promise<number> {
     try {
@@ -148,13 +155,16 @@ export class DiaryService {
   }
 
   /**
-   * 일기 + 대표 미디어 함께 조회 (썸네일용)
+   * 일기와 대표 미디어를 함께 조회합니다 (목록 화면용)
+   * @returns 일기 목록과 첫 번째 미디어 정보
    */
   static async getAllDiariesWithMedia(): Promise<
     (DiaryTableType & { media_uri: string | null; media_type: string | null })[]
   > {
     try {
-      const result = await db.getAllAsync<DiaryTableType & { media_uri: string | null; media_type: string | null }>(
+      const result = await db.getAllAsync<
+        DiaryTableType & { media_uri: string | null; media_type: string | null }
+      >(
         `SELECT d.*, m.file_path as media_uri, m.media_type
        FROM diaries d
        LEFT JOIN (
@@ -174,7 +184,8 @@ export class DiaryService {
   }
 
   /**
-   * 일기 수정
+   * 일기를 수정합니다
+   * @param input - 일기 수정 데이터
    */
   static async updateDiary(input: DiaryUpdateDbPayloadType): Promise<void> {
     try {
@@ -233,7 +244,8 @@ export class DiaryService {
   }
 
   /**
-   * 일기 삭제
+   * 일기를 삭제합니다
+   * @param id - 삭제할 일기 ID
    */
   static async deleteDiary(id: number): Promise<void> {
     try {
@@ -246,12 +258,22 @@ export class DiaryService {
   }
 
   /**
-   * 특정 일기의 미디어 파일 조회
+   * 특정 일기의 미디어 파일을 조회합니다
+   * @param diaryId - 일기 ID
+   * @returns 미디어 파일 목록
    */
-  static async getDiaryMedia(diaryId: number): Promise<MediaTableType[]> {
+  static async getMediaByDiaryId(diaryId: number): Promise<MediaTableType[]> {
     try {
       const result = await db.getAllAsync<MediaTableType>(
-        `SELECT * FROM media WHERE owner_type = 'diary' AND owner_id = ?`,
+        `SELECT 
+          id, 
+          owner_type as ownerType, 
+          owner_id as ownerId, 
+          media_type as mediaType, 
+          file_path as filePath, 
+          created_at as createdAt
+        FROM media 
+        WHERE owner_type = 'diary' AND owner_id = ?`,
         [diaryId],
       );
       return result || [];
@@ -262,14 +284,16 @@ export class DiaryService {
   }
 
   /**
-   * 일기와 미디어 정보 함께 조회
+   * 일기와 미디어 정보를 함께 조회합니다
+   * @param id - 일기 ID
+   * @returns 일기와 미디어 정보
    */
   static async getDiaryWithMedia(id: number): Promise<DiaryWithMediaType | null> {
     try {
       const diary = await this.getDiaryById(id);
       if (!diary) return null;
 
-      const media = await this.getDiaryMedia(id);
+      const media = await this.getMediaByDiaryId(id);
       return { ...diary, media };
     } catch (error) {
       console.error('일기 상세 조회 실패:', error);
@@ -278,7 +302,9 @@ export class DiaryService {
   }
 
   /**
-   * 미디어 파일 추가
+   * 미디어 파일을 추가합니다
+   * @param input - 미디어 생성 데이터
+   * @returns 생성된 미디어 ID
    */
   static async addMedia(input: MediaCreateDbPayloadType): Promise<number> {
     try {
@@ -295,7 +321,8 @@ export class DiaryService {
   }
 
   /**
-   * 미디어 파일 삭제
+   * 미디어 파일을 삭제합니다
+   * @param id - 삭제할 미디어 ID
    */
   static async deleteMedia(id: number): Promise<void> {
     try {
@@ -307,7 +334,8 @@ export class DiaryService {
   }
 
   /**
-   * 일기 통계 조회
+   * 일기 통계를 조회합니다
+   * @returns 전체 일기 수, 기분별 통계, 미디어 포함 일기 수
    */
   static async getDiaryStats(): Promise<{
     total: number;
