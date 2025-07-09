@@ -1,10 +1,11 @@
 import { useContactEditState } from '../hooks/use-contact-edit-state';
 import { MODE } from '../constants/address-book-constants';
-import { createContact, updateContact } from '../services/mutation-address-book-data';
+import { createContact, updateContact } from '../services/mutation-contact-data';
 import { TextInput, View } from 'react-native';
 import AddressBookImage from './address-book-image';
 import Button from '@/src/components/ui/button';
 import { Text } from 'react-native';
+import { formTextStyle } from '../constants/style-class-constants';
 
 const FormEditContact = ({ id }: { id: string }) => {
   const { name, phoneNumber, memo, data, setName, setPhoneNumber, setMemo, refetch } =
@@ -22,8 +23,6 @@ const FormEditContact = ({ id }: { id: string }) => {
       description: data?.memo,
     },
   };
-
-  const formTextStyle = 'border-gray-300 rounded-md border-b-2 p-2 font-bold';
 
   const handleSave = async () => {
     const crate_at = new Date().toISOString();
