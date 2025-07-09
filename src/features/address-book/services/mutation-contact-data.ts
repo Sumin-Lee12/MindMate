@@ -1,8 +1,9 @@
 import { Contact } from '@/src/features/address-book/types/address-book-type';
 import { db } from '@/src/hooks/use-initialize-database';
-import { getContactById } from '@/src/features/address-book/services/get-address-book-data';
-import { getMyContact } from '@/src/features/address-book/services/get-address-book-data';
+import { getContactById } from '@/src/features/address-book/services/get-contact-data';
+import { getMyContact } from '@/src/features/address-book/services/get-contact-data';
 
+//연락처 추가
 export const createContact = async (contactData: Omit<Contact, 'id'>): Promise<Contact> => {
   try {
     const result = await db.runAsync(
