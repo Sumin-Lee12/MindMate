@@ -4,7 +4,7 @@ import AddressBookName from './address-book-name';
 import AddressBookImage from './address-book-image';
 import { Contact } from '../types/address-book-type';
 import { useCallback } from 'react';
-import { getMyContact } from '../services/get-address-book-data';
+import { getMyContact } from '../services/get-contact-data';
 import { useAsyncDataGet } from '../../../hooks/use-async-data-get';
 
 const AddressBookSelfItem = () => {
