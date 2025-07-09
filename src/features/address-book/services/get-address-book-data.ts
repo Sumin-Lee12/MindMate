@@ -1,5 +1,5 @@
 import { db } from '../../../hooks/use-initialize-database';
-import { Contact } from '../types/address-book-type';
+import { Contact, NoteGroup } from '../types/address-book-type';
 
 // 내 연락처만 가져오기
 export const getMyContact = async (): Promise<Contact> => {
@@ -19,6 +19,32 @@ export const getOthersContacts = async (): Promise<Contact[]> => {
     return data;
   } catch (error) {
     console.error(error);
+    throw error;
+  }
+};
+
+//아이디 기준으로 하나만 가져오기
+export const getContactById = async (id: string): Promise<Contact> => {
+  try {
+    const data = await db.getAllAsync<Contact>('SELECT * FROM contact WHERE id = ?', [id]);
+    return data[0] || null;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};
+
+// 특정 연락처의 모든 메모 그룹 조회
+export const getNoteGroupsByContactId = async (contactId: string): Promise<NoteGroup[]> => {
+  try {
+    const result = await db.getAllAsync<NoteGroup>(
+      'SELECT * FROM note_group WHERE contact_id = ? ORDER BY group_id',
+      [contactId],
+    );
+
+    return result;
+  } catch (error) {
+    console.error('❌ 메모 그룹 조회 실패:', error);
     throw error;
   }
 };
