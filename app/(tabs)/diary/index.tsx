@@ -81,7 +81,8 @@ const DiaryListPage = () => {
   };
 
   return (
-    <View className="flex-1 bg-[#f6f7fb]">
+    <View className="flex-1 bg-turquoise">
+      background: ;
       <ScrollView
         contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 96 }}
       >
@@ -109,7 +110,6 @@ const DiaryListPage = () => {
           </View>
         ))}
       </ScrollView>
-
       {/* 플로팅 + 버튼 */}
       <Pressable
         onPress={() => router.push('/diary/create')}
