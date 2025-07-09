@@ -20,8 +20,8 @@ import { useRouter } from 'expo-router';
 import { SearchFormSchema, searchFormSchema } from '@/src/features/search/utils/search-form-schema';
 import ImageButton from '@/src/components/ui/image-button';
 import { MediaType } from '@/src/types/common-db-types';
-import { insertMedia, pickMedia } from '@/src/lib/media-services';
-import { insertSearch } from '@/src/features/search/search-services';
+import { fetchInsertMedia, pickMedia } from '@/src/lib/media-services';
+import { fetchInsertSearch } from '@/src/features/search/search-services';
 
 const SearchForm = () => {
   const router = useRouter();
@@ -54,10 +54,10 @@ const SearchForm = () => {
   const handleFormSubmit = async (data: SearchFormSchema) => {
     try {
       await db.withTransactionAsync(async () => {
-        const lastInsertRowId = await insertSearch(data);
+        const lastInsertRowId = await fetchInsertSearch(data);
         setId(lastInsertRowId);
         if (images.length > 0) {
-          await insertMedia(images, 'search', id);
+          await fetchInsertMedia(images, 'search', id);
         }
       });
       router.back();
