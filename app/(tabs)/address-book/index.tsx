@@ -5,14 +5,6 @@ import AddressBookList from '../../../src/features/address-book/components/addre
 import { View } from 'react-native';
 import SearchInput from '../../../src/components/ui/search-input';
 import AddressBookAddButton from '../../../src/features/address-book/components/address-book-add-button';
-import { useAsyncDataGet } from '../../../src/hooks/use-async-data-get';
-import {
-  getMyContact,
-  getOthersContacts,
-} from '../../../src/features/address-book/services/get-address-book-data';
-import { useCallback } from 'react';
-import { Contact } from '../../../src/features/address-book/types/address-book-type';
-
 const AddressBook = () => {
   return (
     <>
@@ -23,12 +15,11 @@ const AddressBook = () => {
       </View>
 
       {/* 스크롤 가능한 영역 */}
-      <View className="flex-1 bg-turquoise px-4">
+      <View className="flex-1 bg-turquoise">
         <AddressBookList />
       </View>
-
       {/* 추가하기 버튼 */}
-      <View className="absolute bottom-8 right-6">
+      <View className="absolute bottom-1 right-1">
         <AddressBookAddButton />
       </View>
     </>
