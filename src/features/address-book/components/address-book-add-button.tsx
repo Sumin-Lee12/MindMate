@@ -1,11 +1,11 @@
 import AddButton from '@/src/components/ui/add-button';
 import React from 'react';
-import { useNavigation } from '@react-navigation/native';
+import { useRouter } from 'expo-router';
 
 export const AddressBookAddButton = () => {
-  const navigation = useNavigation();
+  const router = useRouter();
   const handlePress = () => {
-    navigation.navigate('address-book/add' as never);
+    router.push('/address-book/edit/new');
   };
 
   return <AddButton onPress={handlePress}></AddButton>;
