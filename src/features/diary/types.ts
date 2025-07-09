@@ -196,14 +196,26 @@ export const moodSchema = z
  * 일기 생성/수정 폼 검증 스키마
  */
 export const diaryFormSchema = z.object({
-  title: z.string().min(1, '제목을 입력해주세요').max(100, '제목은 100자 이하로 작성해주세요'),
-  content: z
-    .string()
-    .min(1, '내용을 입력해주세요')
-    .max(10000, '내용은 10,000자 이하로 작성해주세요'),
-  media: z.array(diaryMediaSchema).default([]),
-  style: diaryStyleSchema,
-  mood: moodSchema,
+  title: z.string().min(1, '제목을 입력해주세요.'),
+  content: z.string().min(1, '내용을 입력해주세요.'),
+  style: z.object({
+    fontFamily: z.string(),
+    fontSize: z.number(),
+    textAlign: z.enum(['left', 'center', 'right']),
+    textColor: z.string().optional(),
+    backgroundColor: z.string().optional(),
+  }),
+  media: z.array(
+    z.object({
+      id: z.string(),
+      type: z.enum(['image', 'video', 'audio']),
+      uri: z.string(),
+      duration: z.number().optional(),
+      thumbnail: z.string().optional(),
+      size: z.number().optional(),
+    }),
+  ),
+  mood: z.enum(['very-happy', 'happy', 'neutral', 'sad', 'very-sad']).optional(),
 });
 
 /**

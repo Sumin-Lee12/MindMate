@@ -2,6 +2,10 @@ import { View, Text, Image, Pressable, ScrollView } from 'react-native';
 import { Feather, AntDesign } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { ArrowDownWideNarrow } from 'lucide-react-native';
+import { useEffect, useState } from 'react';
+import { DiaryService } from '../../../src/features/diary/services';
+
+type DiaryWithMediaType = Awaited<ReturnType<typeof DiaryService.getAllDiariesWithMedia>>;
 
 const formatDateTime = (datetime: string) => {
   const date = new Date(datetime);
@@ -10,42 +14,52 @@ const formatDateTime = (datetime: string) => {
   return `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일 ${['일', '월', '화', '수', '목', '금', '토'][date.getDay()]}요일  오후 ${hours}:${minutes}`;
 };
 
-const diaryData = [
-  {
-    id: '1',
-    title: 'React Native\n프로젝트 시작',
-    image: 'https://picsum.photos/100',
-    date: '2025-06-06T17:00:00',
-    section: '지난 주',
-  },
-  {
-    id: '2',
-    title: 'React Native\n프로젝트 시작',
-    image: 'https://picsum.photos/101',
-    date: '2025-06-06T17:00:00',
-    section: '지난 주',
-  },
-  {
-    id: '3',
-    title: 'React Native\n프로젝트 시작',
-    image: 'https://picsum.photos/102',
-    date: '2025-06-06T17:00:00',
-    section: '지난 달',
-  },
-];
-
 const DiaryListPage = () => {
-  const grouped = diaryData.reduce((acc: any, item) => {
-    if (!acc[item.section]) acc[item.section] = [];
-    acc[item.section].push(item);
+  const [diaries, setDiaries] = useState<DiaryWithMediaType>([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const result = await DiaryService.getAllDiariesWithMedia();
+        setDiaries(result);
+      } catch (err) {
+        console.error('일기 불러오기 실패', err);
+      }
+    };
+    fetchData();
+  }, []);
+
+  const grouped = diaries.reduce((acc: any, item) => {
+    const date = new Date(item.created_at ?? '');
+    const now = new Date();
+    let section = '과거';
+
+    const isSameWeek = (d1: Date, d2: Date) => {
+      const oneJan = new Date(d1.getFullYear(), 0, 1);
+      const week1 = Math.ceil(
+        ((d1.getTime() - oneJan.getTime()) / 86400000 + oneJan.getDay() + 1) / 7,
+      );
+      const week2 = Math.ceil(
+        ((d2.getTime() - oneJan.getTime()) / 86400000 + oneJan.getDay() + 1) / 7,
+      );
+      return d1.getFullYear() === d2.getFullYear() && week1 === week2;
+    };
+
+    if (isSameWeek(date, now)) section = '이번 주';
+    else if (date.getMonth() === now.getMonth() - 1) section = '지난 달';
+    else if (date.getMonth() === now.getMonth()) section = '이번 달';
+    else section = '과거';
+
+    if (!acc[section]) acc[section] = [];
+    acc[section].push(item);
     return acc;
   }, {});
 
   const renderDiaryItem = (item: any) => {
-    const date = new Date(item.date);
+    const date = new Date(item.created_at);
     const day = date.getDate();
     const weekday = ['일', '월', '화', '수', '목', '금', '토'][date.getDay()];
-    const formatted = formatDateTime(item.date);
+    const formatted = formatDateTime(item.created_at);
 
     return (
       <Pressable
@@ -53,27 +67,26 @@ const DiaryListPage = () => {
         onPress={() => router.push(`/diary/${item.id}`)}
         className="mb-4 flex-row overflow-hidden rounded-2xl bg-white shadow-md"
       >
-        {/* 날짜 - 카드 전체 높이를 꽉 채움 */}
+        {/* 날짜 */}
         <View className="w-12 items-center justify-center bg-paleYellow">
           <Text className="text-md font-bold leading-none text-paleCobalt">{day}</Text>
           <Text className="mt-1 text-md font-bold leading-none text-paleCobalt">{weekday}</Text>
         </View>
 
-        {/* 콘텐츠 영역 */}
+        {/* 콘텐츠 */}
         <View className="flex-1 justify-between p-4">
-          {/* 제목과 이미지 */}
           <View className="flex-row items-start justify-between">
             <View className="mr-3 flex-1">
               <Text className="text-lg font-bold leading-tight text-black">{item.title}</Text>
             </View>
-            <Image
-              source={{ uri: item.image }}
-              className="h-20 w-20 rounded-md"
-              resizeMode="cover"
-            />
+            {item.media_uri ? (
+              <Image
+                source={{ uri: item.media_uri }}
+                className="h-20 w-20 rounded-md"
+                resizeMode="cover"
+              />
+            ) : null}
           </View>
-
-          {/* 날짜 */}
           <Text className="mt-2 text-sm text-paleCobalt">{formatted}</Text>
         </View>
       </Pressable>
@@ -82,7 +95,6 @@ const DiaryListPage = () => {
 
   return (
     <View className="flex-1 bg-turquoise">
-      background: ;
       <ScrollView
         contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 96 }}
       >
@@ -92,10 +104,8 @@ const DiaryListPage = () => {
             onPress={() => console.log('정렬 클릭')}
             className="flex-row items-center gap-1"
           >
-            <Text className="leading-[normal]; text-sm font-bold not-italic text-paleCobalt">
-              정렬
-            </Text>
-            <ArrowDownWideNarrow color={'#576bcd'} size={'18px'} />
+            <Text className="text-sm font-bold text-paleCobalt">정렬</Text>
+            <ArrowDownWideNarrow color={'#576bcd'} size={18} />
           </Pressable>
         </View>
 
@@ -103,14 +113,15 @@ const DiaryListPage = () => {
         {Object.keys(grouped).map((section) => (
           <View key={section} className="mb-6">
             <View className="mb-3 flex-row items-center gap-2">
-              <Feather name="calendar" width={18} height={20} size={18} color="#576bcd" />
+              <Feather name="calendar" size={18} color="#576bcd" />
               <Text className="text-sm font-bold text-paleCobalt">{section}</Text>
             </View>
             {grouped[section].map(renderDiaryItem)}
           </View>
         ))}
       </ScrollView>
-      {/* 플로팅 + 버튼 */}
+
+      {/* + 버튼 */}
       <Pressable
         onPress={() => router.push('/diary/create')}
         className="absolute bottom-16 right-6 h-16 w-16 items-center justify-center rounded-full bg-paleCobalt shadow-md"

@@ -27,9 +27,9 @@ export type DiaryTableType = {
   /** 기분/감정 */
   mood: string | null;
   /** 생성 일시 */
-  createdAt: string | null;
+  created_at: string | null;
   /** 수정 일시 */
-  updatedAt: string | null;
+  updated_at: string | null;
 };
 
 /**
