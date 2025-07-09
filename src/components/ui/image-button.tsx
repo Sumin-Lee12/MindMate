@@ -1,25 +1,31 @@
 import { Plus } from 'lucide-react-native';
-import { Text, TouchableOpacity, View } from 'react-native';
+import { Image, Text, TouchableOpacity, View } from 'react-native';
 
 type ImageButtonProps = {
   onPress: () => void;
-  className?: string;
+  // className?: string;
+  image?: string;
 };
 
-const ImageAddButton = ({ onPress, className }: ImageButtonProps) => {
+const ImageButton = ({ onPress, image }: ImageButtonProps) => {
   return (
-    <View className={`h-28 w-full items-start justify-center gap-2 ${className}`}>
-      <Text className="text-md text-paleCobalt">사진</Text>
-      <TouchableOpacity
-        className="h-[72px] w-[72px] items-center justify-center rounded-xl bg-white p-4 shadow-dropShadow"
-        onPress={onPress}
-      >
+    <TouchableOpacity
+      className="h-[72px] w-[72px] items-center justify-center rounded-xl bg-white p-4 shadow-dropShadow"
+      onPress={onPress}
+    >
+      {image ? (
+        <Image
+          className="w-[72px] h-[72px] rounded-xl"
+          source={{ uri: image }}
+          resizeMode="cover"
+        />
+      ) : (
         <Text>
           <Plus color="#576bcd" strokeWidth={4} />
         </Text>
-      </TouchableOpacity>
-    </View>
+      )}
+    </TouchableOpacity>
   );
 };
 
-export default ImageAddButton;
+export default ImageButton;

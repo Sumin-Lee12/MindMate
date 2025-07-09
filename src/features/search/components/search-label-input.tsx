@@ -6,7 +6,9 @@ type SearchLabelInputProps = {
   label: string;
   placeholder?: string;
   className?: string;
+  onBlur?: () => void;
   multiline?: boolean;
+  errors?: string;
 };
 
 const SearchLabelInput = ({
@@ -15,19 +17,25 @@ const SearchLabelInput = ({
   label,
   placeholder,
   className,
+  onBlur,
   multiline = false,
+  errors,
 }: SearchLabelInputProps) => {
   return (
-    <View className={`mb-7 h-20 w-full items-start justify-center gap-2 ${className}`}>
-      <Text className="text-md text-paleCobalt">{label}</Text>
+    <View className={`mb-9 w-full items-start justify-center gap-2 ${className}`}>
+      <Text className="text-lg text-paleCobalt">{label}</Text>
       <TextInput
-        className="w-full flex-1 rounded-xl bg-white px-4 text-sm shadow-dropShadow"
+        className={`w-full rounded-xl bg-white px-4 text-sm shadow-dropShadow ${multiline ? 'h-24 py-2' : 'h-[52px]'}`}
         placeholder={placeholder}
         value={value}
         onChangeText={onChangeText}
         multiline={multiline}
+        onBlur={onBlur}
         textAlignVertical={multiline ? 'top' : 'center'}
       />
+      <View className="h-5">
+        {errors && <Text className="text-ss text-red-500">{errors}</Text>}
+      </View>
     </View>
   );
 };
