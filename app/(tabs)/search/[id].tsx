@@ -6,7 +6,12 @@ import { useCallback, useState } from 'react';
 import { SearchData } from '@/src/features/search/db/search-db-types';
 import { MediaFullType } from '@/src/lib/db/share-db-types';
 import { getCategoryData } from '@/src/features/search/utils/getCategoryData';
-import { ChevronLeft, ChevronRight, MapPin } from 'lucide-react-native';
+import { Camera, ChevronLeft, ChevronRight, MapPin } from 'lucide-react-native';
+import {
+  fetchDeleteSearchById,
+  fetchGetMediaById,
+  fetchGetSearchById,
+} from '@/src/features/search/search-services';
 
 const ItemDetailScreen = () => {
   const { id } = useLocalSearchParams();
@@ -18,47 +23,33 @@ const ItemDetailScreen = () => {
 
   useFocusEffect(
     useCallback(() => {
-      fetchGetSearch();
-      fetchGetMedia();
+      initializeAll();
     }, []),
   );
 
-  // GetSearch 로직
-  const fetchGetSearch = async () => {
+  const initializeAll = async () => {
     try {
-      const search = (await db.getFirstAsync(`
-        SELECT * FROM search WHERE id = ${id}
-      `)) as SearchData;
+      const [search, media] = await Promise.all([fetchGetSearchById(+id), fetchGetMediaById(+id)]);
       setItems(search);
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  // GetMedia 로직
-  const fetchGetMedia = async () => {
-    try {
-      const media = (await db.getAllAsync(`
-        SELECT * FROM media WHERE owner_type = 'search' AND owner_id = ${id}
-      `)) as MediaFullType[];
       setMedia(media);
     } catch (error) {
-      console.log(error);
+      alert(`검색 데이터를 가져오는 데 실패했습니다.`);
     }
   };
 
   // 삭제 로직
-  const fetchDeleteSearch = async () => {
+  const handleDeleteSearch = async () => {
     try {
-      await db.execAsync(`
-        DELETE FROM search WHERE id = ${id};
-        DELETE FROM media WHERE owner_type = 'search' AND owner_id = ${id}
-      `);
+      await fetchDeleteSearchById(+id);
       // todo : toast alert가 있으면 좋을 듯
       router.back();
     } catch (error) {
-      console.log(error);
+      alert(`검색 데이터를 삭제하는 데 실패했습니다.`);
     }
+  };
+
+  const handleEdit = () => {
+    router.push(`/(tabs)/search/search-form?id=${id}`);
   };
 
   if (items === null)
@@ -82,34 +73,40 @@ const ItemDetailScreen = () => {
         </View>
 
         <View className="mb-6">
-          <View className="absolute left-4 top-1/2 z-10 items-center justify-center rounded-full bg-paleCobalt">
-            <ChevronLeft color="white" />
-          </View>
-          <View className=" absolute right-4 top-1/2 z-10 items-center justify-center rounded-full bg-paleCobalt">
-            <ChevronRight color="white" />
-          </View>
-          {media.length > 0 && (
-            <FlatList
-              data={media}
-              keyExtractor={(item) => item.id.toString()}
-              horizontal
-              pagingEnabled
-              showsHorizontalScrollIndicator={false}
-              snapToInterval={itemWidth}
-              decelerationRate="fast"
-              renderItem={({ item }) => (
-                <View
-                  style={{ width: itemWidth }}
-                  className={`h-[200px] items-center justify-center rounded-xl`}
-                >
-                  <Image
-                    source={{ uri: item.file_path }}
-                    resizeMode="cover"
-                    className="h-full w-full rounded-xl"
-                  />
-                </View>
-              )}
-            />
+          {media.length > 0 ? (
+            <View>
+              <View className="absolute left-4 top-1/2 z-10 items-center justify-center rounded-full bg-paleCobalt">
+                <ChevronLeft color="white" />
+              </View>
+              <View className=" absolute right-4 top-1/2 z-10 items-center justify-center rounded-full bg-paleCobalt">
+                <ChevronRight color="white" />
+              </View>
+              <FlatList
+                data={media}
+                keyExtractor={(item) => item.id.toString()}
+                horizontal
+                pagingEnabled
+                showsHorizontalScrollIndicator={false}
+                snapToInterval={itemWidth}
+                decelerationRate="fast"
+                renderItem={({ item }) => (
+                  <View
+                    style={{ width: itemWidth }}
+                    className={`h-[200px] items-center justify-center rounded-xl`}
+                  >
+                    <Image
+                      source={{ uri: item.file_path }}
+                      resizeMode="cover"
+                      className="h-full w-full rounded-xl"
+                    />
+                  </View>
+                )}
+              />
+            </View>
+          ) : (
+            <View className="h-[200px] w-full items-center justify-center rounded-xl bg-foggyBlue">
+              <Camera size={44} color="#576bcd" />
+            </View>
           )}
         </View>
 
@@ -124,10 +121,10 @@ const ItemDetailScreen = () => {
       </View>
 
       <View className="flex-row justify-between gap-4">
-        <Button className="w-[244px]" onPress={() => console.log(`Item ID: ${id}`)}>
+        <Button className="w-[240px]" onPress={handleEdit}>
           <Text className="text-lg text-white">수정하기</Text>
         </Button>
-        <Button className="flex-1 bg-paleYellow" onPress={fetchDeleteSearch}>
+        <Button className="flex-1 bg-paleYellow" onPress={handleDeleteSearch}>
           <Text className="text-lg text-black">삭제</Text>
         </Button>
       </View>
