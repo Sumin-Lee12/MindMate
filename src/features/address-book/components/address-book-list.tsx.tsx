@@ -18,7 +18,7 @@ const AddressBookList = () => {
     <ScrollView className="flex-1">
       <View className="flex-col gap-2 last:mb-20">
         {data.map((contact) => {
-          return <AddressBookItem key={contact.id} contact={contact} />;
+          return <AddressBookItem key={contact.id} contact={contact} refetch={refetch} />;
         })}
       </View>
     </ScrollView>

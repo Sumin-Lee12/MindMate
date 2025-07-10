@@ -1,22 +1,33 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Image, Text, TouchableOpacity, View } from 'react-native';
 import CommonBox from '../../../components/ui/common-box';
 import AddressBookLabel from './address-book-label';
 import AddressBookName from './address-book-name';
-import { Mail, Phone } from 'lucide-react-native';
+import { EllipsisVertical, Mail, Phone } from 'lucide-react-native';
 import AddressBookContent from './address-book-content';
 import AddressBookImage from './address-book-image';
 import { Contact } from '../types/address-book-type';
 import { useRouter } from 'expo-router';
+import ActionMenu from './action-menu';
+import { deleteContact } from '../services/mutation-contact-data';
 
-const AddressBookItem = ({ contact }: { contact: Contact }) => {
+const AddressBookItem = ({ contact, refetch }: { contact: Contact; refetch: () => void }) => {
   const router = useRouter();
-  const handlePress = () => {
+  const [isActionMenuVisible, setIsActionMenuVisible] = useState(false);
+
+  const handleEdit = () => {
     router.push(`/address-book/edit/${contact.id}`);
   };
+
+  const handleDelete = () => {
+    deleteContact(contact.id.toString());
+    setIsActionMenuVisible(false);
+    refetch();
+  };
+
   return (
     <CommonBox color="paleCobalt">
-      <TouchableOpacity onPress={handlePress}>
+      <TouchableOpacity onPress={handleEdit}>
         {/* 상단 부분 */}
         <View className="flex-row justify-between">
           <View className="flex-row flex-wrap gap-1">
@@ -24,10 +35,22 @@ const AddressBookItem = ({ contact }: { contact: Contact }) => {
             <AddressBookLabel>딸</AddressBookLabel>
             <AddressBookLabel>친구</AddressBookLabel>
           </View>
-          <View className="flex-row items-start justify-between">
+          <View className="flex-row items-start justify-between gap-2">
             <AddressBookName>{contact.name}</AddressBookName>
+            <TouchableOpacity onPress={() => setIsActionMenuVisible(true)}>
+              <View className="h-6 w-6 items-center justify-center">
+                <EllipsisVertical size={25} color="#666" />
+              </View>
+            </TouchableOpacity>
           </View>
-          {/* TODO 햄버거 만들기 */}
+          {isActionMenuVisible && (
+            <ActionMenu
+              isVisible={isActionMenuVisible}
+              onClose={() => setIsActionMenuVisible(false)}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+            />
+          )}
         </View>
 
         <View className="flex-row">
