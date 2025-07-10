@@ -2,7 +2,7 @@ import { db } from '../hooks/use-initialize-database';
 import { MediaType } from '../types/common-db-types';
 import * as ImagePicker from 'expo-image-picker';
 
-type InsertMediaType = {
+type fetchInsertMediaType = {
   media: MediaType[];
   owner_type: string;
   owner_id: number;
@@ -15,11 +15,11 @@ type InsertMediaType = {
  * @param owner_id - 해당 도메인 테이블의 고유 ID
  * @returns - 그대로 반환
  */
-export const insertMedia = async (
+export const fetchInsertMedia = async (
   media: MediaType[],
   owner_type: string,
   owner_id: number,
-): Promise<InsertMediaType> => {
+): Promise<fetchInsertMediaType> => {
   await Promise.all(
     media.map((item) =>
       db.runAsync(
