@@ -27,6 +27,7 @@ import {
   fetchUpdateSearchById,
   insertSearch,
 } from '@/src/features/search/search-services';
+import Toast from 'react-native-toast-message';
 
 const SearchForm = () => {
   const router = useRouter();
@@ -91,8 +92,15 @@ const SearchForm = () => {
         }
       });
       router.back();
+      Toast.show({
+        type: 'success',
+        text1: '등록이 완료되었습니다.',
+      });
     } catch (error) {
-      alert('폼 제출 오류:');
+      Toast.show({
+        type: 'error',
+        text1: '등록에 실패했습니다.',
+      });
       return;
     }
   };
@@ -102,8 +110,16 @@ const SearchForm = () => {
     try {
       await fetchUpdateSearchById(+id, data, images);
       router.back();
+      Toast.show({
+        type: 'success',
+        text1: '수정이 완료되었습니다.',
+      });
     } catch (error) {
-      alert('폼 업데이트 오류');
+      Toast.show({
+        type: 'error',
+        text1: '수정에 실패했습니다.',
+      });
+      return;
     }
   };
 
