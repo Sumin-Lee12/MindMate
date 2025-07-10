@@ -1,9 +1,8 @@
-import React, { useState } from 'react';
-import { Image, Text, TouchableOpacity, View } from 'react-native';
+import React, { useCallback, useEffect, useState } from 'react';
+import { TouchableOpacity, View } from 'react-native';
 import CommonBox from '../../../components/ui/common-box';
-import AddressBookLabel from './address-book-label';
 import AddressBookName from './address-book-name';
-import { EllipsisVertical, Mail, Phone } from 'lucide-react-native';
+import { EllipsisVertical } from 'lucide-react-native';
 import AddressBookContent from './address-book-content';
 import AddressBookImage from './address-book-image';
 import { Contact } from '../types/address-book-type';
@@ -12,10 +11,22 @@ import ActionMenu from './action-menu';
 import { deleteContact } from '../services/mutation-contact-data';
 import CallButton from './call-button';
 import MessageButton from './message-button';
+import { useAsyncDataGet } from '../../../hooks/use-async-data-get';
+import { getAllTags, getContactTags } from '../services/get-tag-data';
+import AddressBookTag from './address-book-tag';
+import EditAddressBookTagButton from './edit-address-book-tag-button';
 
 const AddressBookItem = ({ contact, refetch }: { contact: Contact; refetch: () => void }) => {
   const router = useRouter();
   const [isActionMenuVisible, setIsActionMenuVisible] = useState(false);
+  const getContactTagsUseCallBack = useCallback(() => getContactTags(contact.id), [contact.id]);
+  const { data: tags } = useAsyncDataGet(getContactTagsUseCallBack);
+
+  useEffect(() => {
+    getAllTags().then((tags) => {
+      console.log(tags);
+    });
+  }, [tags]);
 
   const handleEdit = () => {
     router.push(`/address-book/edit/${contact.id}`);
@@ -33,9 +44,8 @@ const AddressBookItem = ({ contact, refetch }: { contact: Contact; refetch: () =
         {/* 상단 부분 */}
         <View className="flex-row justify-between">
           <View className="flex-row flex-wrap gap-1">
-            <AddressBookLabel>가족</AddressBookLabel>
-            <AddressBookLabel>딸</AddressBookLabel>
-            <AddressBookLabel>친구</AddressBookLabel>
+            {tags?.map((tag) => <AddressBookTag key={tag.id}>{tag.name}</AddressBookTag>)}
+            <EditAddressBookTagButton />
           </View>
           <View className="flex-row items-start justify-between gap-2">
             <AddressBookName>{contact.name}</AddressBookName>

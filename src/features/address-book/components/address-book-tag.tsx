@@ -5,7 +5,7 @@ type AddressBookLabel = {
   children: ReactNode;
 };
 
-const AddressBookLabel = ({ children }: AddressBookLabel) => {
+const AddressBookTag = ({ children }: AddressBookLabel) => {
   return (
     <Text className="rounded-full bg-turquoise px-2 py-0.5 text-ss color-paleCobalt">
       {children}
@@ -13,4 +13,4 @@ const AddressBookLabel = ({ children }: AddressBookLabel) => {
   );
 };
 
-export default AddressBookLabel;
+export default AddressBookTag;
