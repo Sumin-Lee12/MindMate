@@ -14,10 +14,10 @@ type ButtonProps = {
  * @returns
  */
 
-const Button = ({ children, onPress, className }: ButtonProps) => {
+const Button = ({ children, onPress, className = 'w-full' }: ButtonProps) => {
   return (
     <TouchableOpacity
-      className={`h-14 w-full items-center justify-center rounded-lg bg-paleCobalt ${className}`}
+      className={`h-14 items-center justify-center rounded-lg bg-paleCobalt ${className}`}
       onPress={onPress}
     >
       {children}
