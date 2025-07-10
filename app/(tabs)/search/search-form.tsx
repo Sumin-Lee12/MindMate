@@ -153,10 +153,9 @@ const SearchForm = () => {
                       value={value}
                       items={items}
                       setOpen={setOpen}
-                      setValue={onChange}
+                      setValue={(val) => onChange(typeof val === 'function' ? val(value) : val)}
                       setItems={setItems}
                       onPress={Keyboard.dismiss}
-                      onChangeValue={(val) => onChange(val)}
                     />
                   )}
                 />
@@ -214,7 +213,7 @@ const SearchForm = () => {
             </View>
             <View className="w-full items-center bg-turquoise pb-6">
               <Button
-                className="h-[50px] w-3/4 rounded-xl bg-paleCobalt "
+                className="h-[50px] w-full rounded-xl bg-paleCobalt "
                 onPress={
                   id
                     ? () => handleSubmit(handleFormUpdate)()
