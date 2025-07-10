@@ -11,6 +11,7 @@ import { useRouter } from 'expo-router';
 import ActionMenu from './action-menu';
 import { deleteContact } from '../services/mutation-contact-data';
 import CallButton from './call-button';
+import MessageButton from './message-button';
 
 const AddressBookItem = ({ contact, refetch }: { contact: Contact; refetch: () => void }) => {
   const router = useRouter();
@@ -68,10 +69,7 @@ const AddressBookItem = ({ contact, refetch }: { contact: Contact; refetch: () =
             {/* 버튼 */}
             <View className="mt-3 flex-row gap-2">
               <CallButton phoneNumber={contact.phone_number} />
-              <TouchableOpacity className="flex-1 flex-row items-center justify-center rounded-full border border-paleCobalt py-1">
-                <Mail size={16} color="#576bcd" />
-                <Text className="ml-1 text-sm text-paleCobalt">문자하기</Text>
-              </TouchableOpacity>
+              <MessageButton phoneNumber={contact.phone_number} />
             </View>
           </View>
         </View>
