@@ -42,7 +42,12 @@ const ItemDetailScreen = () => {
   // 삭제 로직
   const handleDeleteSearch = async () => {
     try {
-      deleteAlert({ text1: '삭제하시겠습니까?', text2: '', onPress: deleteSearchWithAlert });
+      deleteAlert({
+        type: 'delete',
+        text1: '삭제하시겠습니까?',
+        text2: '',
+        onPress: deleteSearchWithAlert,
+      });
     } catch (error) {
       alert(`검색 데이터를 삭제하는 데 실패했습니다.`);
     }
