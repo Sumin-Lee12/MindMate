@@ -45,7 +45,7 @@ export const fetchUpdateSearchById = async (
   data: SearchFormSchema,
   media: MediaType[],
 ) => {
-  // await db.withTransactionAsync(async () => {
+  await db.withTransactionAsync(async () => {
     await db.runAsync(
       `
         UPDATE search
@@ -54,17 +54,19 @@ export const fetchUpdateSearchById = async (
       `,
       [data.name, data.category, data.location, data.description ?? null, id],
     );
-    await Promise.all(
-      media.map((item) => {
-        db.runAsync(
-          `
-            UPDATE media
-            SET media_type = ?, file_path = ?
-            WHERE owner_type = 'search' AND owner_id = ?
+    await db.runAsync(`DELETE FROM media WHERE owner_type = 'search' AND owner_id = ?`, [id]);
+    if (media.length > 0) {
+      await Promise.all(
+        media.map((item) => {
+          return db.runAsync(
+            `
+            INSERT INTO media (media_type, file_path, owner_type, owner_id)
+            VALUES (?, ?, 'search', ?)
           `,
-          [item.type ?? null, item.uri, id],
-        );
-      }),
-    );
-  // });
+            [item.type ?? null, item.uri, id],
+          );
+        }),
+      );
+    }
+  });
 };
