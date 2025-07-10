@@ -1,8 +1,9 @@
-import { Modal, Text, TextInput, TouchableWithoutFeedback, View } from 'react-native';
-import { Children, useState } from 'react';
+import { Text, TextInput, View } from 'react-native';
+import { useState } from 'react';
 import { createNoteGroup } from '../services/mutation-note-group-data';
 import { formTextStyle } from '../constants/style-class-constants';
 import Button from '@/src/components/ui/button';
+import BottomModal from '@/src/components/ui/bottom-modal';
 
 const AddContactDetailGroupModal = ({
   isModalVisible,
