@@ -1,10 +1,18 @@
-import { Text, View } from 'react-native';
+import React from 'react';
 
-export default function HomeScreen() {
+import AddressBookSelfItem from '../../../src/features/address-book/components/address-book-self-item';
+import AddressBookList from '../../../src/features/address-book/components/address-book-list.tsx';
+import { View } from 'react-native';
+import SearchInput from '../../../src/components/ui/search-input';
+
+const AddressBook = () => {
   return (
-    //홈화면
-    <View className="flex-1 items-center justify-center bg-white">
-      <Text className="text-xl font-bold text-blue-500">주소록</Text>
+    <View className="gap-6 bg-turquoise px-4 pt-6">
+      <AddressBookSelfItem />
+      <SearchInput></SearchInput>
+      <AddressBookList />
     </View>
   );
-}
+};
+
+export default AddressBook;
