@@ -2,9 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, ScrollView, TouchableOpacity, Image } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import Label from 'src/components/ui/label';
 import CheckBox from 'src/components/ui/checkbox';
-import Modal from 'src/components/ui/modal';
 import AlarmTimePicker from 'src/features/routine/components/AlarmTimePicker';
 import RepeatInfoModal from 'src/features/routine/components/RepeatInfoModal';
 
