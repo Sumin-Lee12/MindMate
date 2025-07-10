@@ -55,7 +55,9 @@ const ContactDetailGroupList = ({ group, refetch }: { group: NoteGroup; refetch:
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isActionMenuVisible, setIsActionMenuVisible] = useState(false);
 
-  const { data } = useAsyncDataGet<NoteItem[]>(getNoteItemsByGroupIdCallback);
+  const { data, refetch: noteItemRefetch } = useAsyncDataGet<NoteItem[]>(
+    getNoteItemsByGroupIdCallback,
+  );
   const handleDeleteContactDetailGroup = async () => {
     await deleteNoteGroup(group.group_id.toString());
     refetch();
@@ -73,15 +75,16 @@ const ContactDetailGroupList = ({ group, refetch }: { group: NoteGroup; refetch:
       {data?.map((item) => {
         return <ContactDetailGroupItem key={item.item_id} item={item} refetch={refetch} />;
       })}
-      <AddContactDetailGroupItemButton onPress={() => setIsModalVisible(true)} />
+      <AddContactDetailGroupItemButton refetch={noteItemRefetch} group={group} />
       {isModalVisible && (
         <EditContactDetailGroupModal
           isModalVisible={isModalVisible}
           setIsModalVisible={setIsModalVisible}
           group={group}
-          refetch={refetch}
+          refetch={noteItemRefetch}
         />
       )}
+
       {isActionMenuVisible && (
         <ActionMenu
           isVisible={isActionMenuVisible}
@@ -93,6 +96,32 @@ const ContactDetailGroupList = ({ group, refetch }: { group: NoteGroup; refetch:
         />
       )}
     </View>
+  );
+};
+
+const AddContactDetailGroupItemButton = ({
+  refetch,
+  group,
+}: {
+  refetch: () => void;
+  group: NoteGroup;
+}) => {
+  const [isModalVisible, setIsModalVisible] = useState(false);
+
+  return (
+    <>
+      <Button onPress={() => setIsModalVisible(true)}>
+        <Text>+추가하기</Text>
+      </Button>
+      {isModalVisible && (
+        <EditContactDetailGroupItemModal
+          isModalVisible={isModalVisible}
+          setIsModalVisible={setIsModalVisible}
+          groupId={group.group_id}
+          refetch={refetch}
+        />
+      )}
+    </>
   );
 };
 
@@ -143,14 +172,6 @@ const ContactDetailGroupItem = ({ item, refetch }: { item: NoteItem; refetch: ()
         />
       )}
     </CommonBox>
-  );
-};
-
-const AddContactDetailGroupItemButton = ({ onPress }: { onPress: () => void }) => {
-  return (
-    <Button onPress={onPress}>
-      <Text>+추가하기</Text>
-    </Button>
   );
 };
 
