@@ -45,7 +45,7 @@ const FormEditContact = ({ id }: { id: string }) => {
   return (
     <>
       <View className="flex-row items-center justify-evenly">
-        <View>
+        <View className="flex-1">
           <TextInput
             className={`text-xl ${formTextStyle}`}
             value={name}
@@ -53,7 +53,7 @@ const FormEditContact = ({ id }: { id: string }) => {
             placeholder={placeHolder[mode].name}
           />
           <TextInput
-            className={`text-sm ${formTextStyle}`}
+            className={`text-sm ${formTextStyle} `}
             value={phoneNumber}
             onChangeText={setPhoneNumber}
             placeholder={placeHolder[mode].phoneNumber}
