@@ -1,10 +1,29 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, ScrollView, TouchableOpacity, Image } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import {
+  View,
+  Text,
+  TextInput,
+  ScrollView,
+  TouchableOpacity,
+  Image,
+  ActivityIndicator,
+  Alert,
+} from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import CheckBox from 'src/components/ui/checkbox';
 import AlarmTimePicker from 'src/features/routine/components/AlarmTimePicker';
 import RepeatInfoModal from 'src/features/routine/components/RepeatInfoModal';
+import { useRoutineDetailQuery } from 'src/features/routine/hooks/use-routine-query';
+import {
+  useCreateRoutine,
+  useUpdateRoutine,
+} from 'src/features/routine/hooks/use-routine-mutation';
+import {
+  CreateRoutinePayload,
+  UpdateRoutinePayload,
+  RepeatCycleType,
+} from 'src/features/routine/types';
 
 const RoutineDetail = () => {
   const { id } = useLocalSearchParams();
@@ -15,11 +34,35 @@ const RoutineDetail = () => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [subTasks, setSubTasks] = useState(['']);
-  const [repeatInfo, setRepeatInfo] = useState('');
+  const [repeatInfo, setRepeatInfo] = useState<RepeatCycleType>('매일');
   const [alarmTime, setAlarmTime] = useState(new Date());
-  const [duration, setDuration] = useState('');
+  const [imageUrl, setImageUrl] = useState('');
   const [showRepeatInfo, setShowRepeatInfo] = useState(false);
   const [showImagePicker, setShowImagePicker] = useState(false);
+
+  // 루틴 조회 훅 (수정 모드일 때만)
+  const { routine, isLoading, error } = useRoutineDetailQuery(isEdit ? (id as string) : null);
+
+  // 루틴 생성/수정 훅
+  const { createRoutine, isLoading: isCreating } = useCreateRoutine();
+  const { updateRoutine, isLoading: isUpdating } = useUpdateRoutine();
+
+  // 기존 루틴 데이터 로드 (수정 모드)
+  useEffect(() => {
+    if (routine && isEdit) {
+      setTitle(routine.name);
+      setDescription(routine.details || '');
+      setSubTasks(routine.subTasks.map((task) => task.title));
+      setRepeatInfo(routine.repeatCycle);
+      if (routine.alarmTime) {
+        const [hours, minutes] = routine.alarmTime.split(':');
+        const date = new Date();
+        date.setHours(parseInt(hours), parseInt(minutes));
+        setAlarmTime(date);
+      }
+      setImageUrl(routine.imageUrl || '');
+    }
+  }, [routine, isEdit]);
 
   // 하위 작업 추가
   const addSubTask = () => {
@@ -39,6 +82,95 @@ const RoutineDetail = () => {
     newSubTasks[index] = value;
     setSubTasks(newSubTasks);
   };
+
+  // 루틴 저장/수정
+  const handleSave = async () => {
+    // 유효성 검사
+    if (!title.trim()) {
+      Alert.alert('오류', '루틴 이름을 입력해주세요.');
+      return;
+    }
+
+    if (subTasks.length === 0 || subTasks.every((task) => !task.trim())) {
+      Alert.alert('오류', '최소 하나의 하위 작업을 입력해주세요.');
+      return;
+    }
+
+    // 시간 포맷팅
+    const timeString = `${alarmTime.getHours().toString().padStart(2, '0')}:${alarmTime.getMinutes().toString().padStart(2, '0')}`;
+
+    // 하위 작업 데이터 준비
+    const subTasksData = subTasks
+      .filter((task) => task.trim())
+      .map((task, index) => ({
+        title: task.trim(),
+        order: index + 1,
+      }));
+
+    if (isEdit) {
+      // 수정 모드
+      const updatePayload: UpdateRoutinePayload = {
+        id: id as string,
+        name: title.trim(),
+        details: description.trim() || undefined,
+        repeatCycle: repeatInfo,
+        alarmTime: timeString,
+        imageUrl: imageUrl || undefined,
+        subTasks: subTasksData,
+      };
+
+      const result = await updateRoutine(updatePayload);
+      if (result) {
+        Alert.alert('성공', '루틴이 수정되었습니다.', [
+          { text: '확인', onPress: () => router.back() },
+        ]);
+      }
+    } else {
+      // 생성 모드
+      const createPayload: CreateRoutinePayload = {
+        name: title.trim(),
+        details: description.trim() || undefined,
+        repeatCycle: repeatInfo,
+        alarmTime: timeString,
+        imageUrl: imageUrl || undefined,
+        subTasks: subTasksData,
+      };
+
+      const result = await createRoutine(createPayload);
+      if (result) {
+        Alert.alert('성공', '루틴이 생성되었습니다.', [
+          { text: '확인', onPress: () => router.back() },
+        ]);
+      }
+    }
+  };
+
+  // 로딩 상태
+  if (isLoading) {
+    return (
+      <View className="flex-1 items-center justify-center bg-turquoise">
+        <ActivityIndicator size="large" color="#0891b2" />
+        <Text className="text-gray-600 mt-4">루틴을 불러오는 중...</Text>
+      </View>
+    );
+  }
+
+  // 에러 상태
+  if (error) {
+    return (
+      <View className="flex-1 items-center justify-center bg-turquoise px-4">
+        <Text className="mb-4 text-center text-red-500">{error}</Text>
+        <TouchableOpacity
+          className="rounded-lg bg-cyan-600 px-4 py-2"
+          onPress={() => router.back()}
+        >
+          <Text className="text-white">돌아가기</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
+  const isSaving = isCreating || isUpdating;
 
   return (
     <View className="flex-1 bg-turquoise">
@@ -95,7 +227,7 @@ const RoutineDetail = () => {
                 <CheckBox
                   checked={false}
                   onChange={() => {
-                    /* TODO: 하위 작업 체크 상태 변경 */
+                    /* 하위 작업 체크는 상세 페이지에서만 사용 */
                   }}
                 />
                 <TextInput
@@ -121,8 +253,14 @@ const RoutineDetail = () => {
               onPress={() => setShowImagePicker(true)}
               className="flex-row items-center justify-center rounded-xl border-2 border-dashed border-[#B0B8CC] bg-white py-8"
             >
-              <Ionicons name="camera-outline" size={32} color="#B0B8CC" />
-              <Text className="ml-2 text-sm text-[#B0B8CC]">사진 추가</Text>
+              {imageUrl ? (
+                <Image source={{ uri: imageUrl }} className="h-20 w-20 rounded-lg" />
+              ) : (
+                <>
+                  <Ionicons name="camera-outline" size={32} color="#B0B8CC" />
+                  <Text className="ml-2 text-sm text-[#B0B8CC]">사진 추가</Text>
+                </>
+              )}
             </TouchableOpacity>
           </View>
         </View>
@@ -141,7 +279,7 @@ const RoutineDetail = () => {
             </View>
             <TextInput
               value={repeatInfo}
-              onChangeText={setRepeatInfo}
+              onChangeText={(text) => setRepeatInfo(text as RepeatCycleType)}
               placeholder="예: 매일, 매주 수요일"
               className="rounded-xl bg-white px-4 py-3 shadow-sm"
               placeholderTextColor="#B0B8CC"
@@ -153,18 +291,6 @@ const RoutineDetail = () => {
             <Text className="mb-2 text-sm font-medium text-gray">알림 시간</Text>
             <AlarmTimePicker value={alarmTime} onChange={setAlarmTime} />
           </View>
-
-          {/* 소요 시간 */}
-          <View className="mb-4">
-            <Text className="mb-2 text-sm font-medium text-gray">소요 시간</Text>
-            <TextInput
-              value={duration}
-              onChangeText={setDuration}
-              placeholder="예: 30분"
-              className="rounded-xl bg-white px-4 py-3 shadow-sm"
-              placeholderTextColor="#B0B8CC"
-            />
-          </View>
         </View>
       </ScrollView>
 
@@ -173,16 +299,25 @@ const RoutineDetail = () => {
         <TouchableOpacity
           onPress={() => router.back()}
           className="flex-1 rounded-xl border border-[#B0B8CC] py-3"
+          disabled={isSaving}
         >
           <Text className="text-center font-medium text-gray">취소</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          onPress={() => {
-            /* TODO: 루틴 저장/수정 */
-          }}
-          className="flex-1 rounded-xl bg-[#576BCD] py-3"
+          onPress={handleSave}
+          className={`flex-1 rounded-xl py-3 ${isSaving ? 'bg-gray-400' : 'bg-[#576BCD]'}`}
+          disabled={isSaving}
         >
-          <Text className="text-center font-medium text-white">{isEdit ? '수정' : '등록'}</Text>
+          {isSaving ? (
+            <View className="flex-row items-center justify-center">
+              <ActivityIndicator size="small" color="white" />
+              <Text className="ml-2 text-center font-medium text-white">
+                {isEdit ? '수정 중...' : '생성 중...'}
+              </Text>
+            </View>
+          ) : (
+            <Text className="text-center font-medium text-white">{isEdit ? '수정' : '등록'}</Text>
+          )}
         </TouchableOpacity>
       </View>
 

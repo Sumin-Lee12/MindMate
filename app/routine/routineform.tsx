@@ -1,84 +1,132 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Image } from 'react-native';
+import {
+  View,
+  Text,
+  ScrollView,
+  TouchableOpacity,
+  Image,
+  ActivityIndicator,
+  Alert,
+} from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import SubRoutineTaskCheckCard from 'src/features/routine/components/SubRoutineTaskCheckCard';
 import Label from 'src/components/ui/label';
-
-// 더미 루틴 데이터 (실제로는 서버에서 가져올 데이터)
-// TODO: 서버 연동 후 실제 데이터로 교체
-const getRoutineData = (id: string) => {
-  const routines = {
-    '1': {
-      id: 1,
-      title: '책 읽기',
-      description: '매일 독서 습관을 기르기 위한 루틴입니다.',
-      date: '2025년 6월 5일',
-      repeat: '매일',
-      time: '5:30 PM',
-      duration: '15분',
-      image: null,
-      subTasks: [
-        { id: 1, title: '트렌드 코리아 2024', completed: false },
-        { id: 2, title: '트렌드 코리아 2024', completed: true },
-        { id: 3, title: '트렌드 코리아 2024', completed: false },
-      ],
-    },
-    '2': {
-      id: 2,
-      title: '운동하기',
-      description: '규칙적인 운동 습관을 기르기 위한 루틴입니다.',
-      date: '2025년 6월 5일',
-      repeat: '매주 월,수,금',
-      time: '6:00 PM',
-      duration: '30분',
-      image: null,
-      subTasks: [
-        { id: 1, title: '스트레칭', completed: true },
-        { id: 2, title: '유산소 운동', completed: false },
-        { id: 3, title: '근력 운동', completed: false },
-      ],
-    },
-  };
-
-  return routines[id as keyof typeof routines] || routines['1'];
-};
+import { useRoutineDetailQuery } from 'src/features/routine/hooks/use-routine-query';
+import {
+  useUpdateRoutine,
+  useUpdateSubTaskCompletion,
+} from 'src/features/routine/hooks/use-routine-mutation';
+import { RoutineType } from 'src/features/routine/types';
 
 const RoutineForm = () => {
   const router = useRouter();
   const { id } = useLocalSearchParams();
-  const [routineData, setRoutineData] = useState<any>(null);
   const [subTaskChecks, setSubTaskChecks] = useState<boolean[]>([]);
 
+  // 루틴 상세 조회 훅
+  const { routine, isLoading, error, refetch } = useRoutineDetailQuery(id as string);
+
+  // 루틴 수정 훅
+  const { updateRoutine, isLoading: isUpdating } = useUpdateRoutine();
+
+  // 하위 작업 완료 상태 변경 훅
+  const { updateCompletion, isLoading: isUpdatingTask } = useUpdateSubTaskCompletion();
+
+  // 루틴 데이터가 로드되면 하위 작업 체크 상태 초기화
   useEffect(() => {
-    if (id) {
-      const data = getRoutineData(id as string);
-      setRoutineData(data);
-      setSubTaskChecks(data.subTasks.map((task: any) => task.completed));
+    if (routine) {
+      setSubTaskChecks(routine.subTasks.map((task) => task.isCompleted));
     }
-  }, [id]);
+  }, [routine]);
 
   // 하위 작업 체크 상태 변경
-  const handleSubTaskToggle = (index: number, checked: boolean) => {
-    const newChecks = [...subTaskChecks];
-    newChecks[index] = checked;
-    setSubTaskChecks(newChecks);
-    /* TODO: 서버에 하위 작업 완료 상태 업데이트 */
+  const handleSubTaskToggle = async (index: number, checked: boolean) => {
+    if (!routine) return;
+
+    const subTask = routine.subTasks[index];
+    if (!subTask) return;
+
+    const success = await updateCompletion(subTask.id, checked);
+    if (success) {
+      const newChecks = [...subTaskChecks];
+      newChecks[index] = checked;
+      setSubTaskChecks(newChecks);
+      // 루틴 데이터 새로고침
+      refetch();
+    }
   };
 
   // 루틴 완료 처리
   const handleCompleteRoutine = () => {
-    /* TODO: 루틴 완료 처리 로직 */
-    console.log('Routine completed!');
+    Alert.alert('루틴 완료', '모든 하위 작업이 완료되었습니다! 루틴을 완료 처리하시겠습니까?', [
+      { text: '취소', style: 'cancel' },
+      {
+        text: '완료',
+        onPress: () => {
+          // TODO: 루틴 완료 처리 로직 (루틴 실행 기록 저장)
+          Alert.alert('축하합니다!', '루틴을 성공적으로 완료했습니다.');
+        },
+      },
+    ]);
   };
 
-  if (!routineData) {
+  // 로딩 상태
+  if (isLoading) {
     return (
       <View className="flex-1 items-center justify-center bg-turquoise">
-        <Text className="text-lg text-gray">로딩 중...</Text>
+        <ActivityIndicator size="large" color="#0891b2" />
+        <Text className="text-gray-600 mt-4">루틴을 불러오는 중...</Text>
       </View>
     );
   }
+
+  // 에러 상태
+  if (error) {
+    return (
+      <View className="flex-1 items-center justify-center bg-turquoise px-4">
+        <Text className="mb-4 text-center text-red-500">{error}</Text>
+        <TouchableOpacity className="rounded-lg bg-cyan-600 px-4 py-2" onPress={refetch}>
+          <Text className="text-white">다시 시도</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
+  // 루틴 데이터가 없는 경우
+  if (!routine) {
+    return (
+      <View className="flex-1 items-center justify-center bg-turquoise">
+        <Text className="text-gray-600">루틴을 찾을 수 없습니다.</Text>
+      </View>
+    );
+  }
+
+  // 날짜 포맷팅 함수
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const year = date.getFullYear();
+    const month = date.getMonth() + 1;
+    const day = date.getDate();
+    return `${year}년 ${month}월 ${day}일`;
+  };
+
+  // 시간 포맷팅 함수
+  const formatTime = (time: string) => {
+    try {
+      const [hours, minutes] = time.split(':');
+      const hour = parseInt(hours);
+      const ampm = hour >= 12 ? 'PM' : 'AM';
+      const displayHour = hour > 12 ? hour - 12 : hour === 0 ? 12 : hour;
+      return `${displayHour}:${minutes} ${ampm}`;
+    } catch {
+      return time;
+    }
+  };
+
+  const allTasksCompleted = subTaskChecks.every(Boolean);
+  const completedCount = subTaskChecks.filter(Boolean).length;
+  const totalCount = subTaskChecks.length;
 
   return (
     <View className="flex-1 bg-turquoise">
@@ -88,7 +136,7 @@ const RoutineForm = () => {
           <Ionicons name="arrow-back" size={24} color="#576BCD" />
         </TouchableOpacity>
         <Text className="text-lg font-bold text-black">루틴 상세</Text>
-        <TouchableOpacity onPress={() => router.push(`/routine/${routineData.id}`)}>
+        <TouchableOpacity onPress={() => router.push(`/routine/routineform?id=${routine.id}`)}>
           <Ionicons name="create-outline" size={24} color="#576BCD" />
         </TouchableOpacity>
       </View>
@@ -98,12 +146,12 @@ const RoutineForm = () => {
         <View className="mb-6 rounded-xl bg-white p-4 shadow-sm">
           <View className="mb-4 flex-row items-start justify-between">
             <View className="flex-1">
-              <Text className="mb-2 text-xl font-bold text-black">{routineData.title}</Text>
-              <Text className="text-sm text-gray">{routineData.description}</Text>
+              <Text className="mb-2 text-xl font-bold text-black">{routine.name}</Text>
+              <Text className="text-sm text-gray">{routine.details || '설명이 없습니다.'}</Text>
             </View>
-            {routineData.image && (
+            {routine.imageUrl && (
               <Image
-                source={{ uri: routineData.image }}
+                source={{ uri: routine.imageUrl }}
                 className="ml-4 h-16 w-16 rounded-lg"
                 resizeMode="cover"
               />
@@ -112,10 +160,10 @@ const RoutineForm = () => {
 
           {/* 루틴 정보 라벨들 */}
           <View className="flex-row flex-wrap gap-2">
-            <Label>{routineData.date}</Label>
-            <Label>{routineData.repeat}</Label>
-            <Label>{routineData.time}</Label>
-            <Label>{routineData.duration}</Label>
+            {routine.deadline && <Label>{formatDate(routine.deadline)}</Label>}
+            <Label>{routine.repeatCycle}</Label>
+            {routine.alarmTime && <Label>{formatTime(routine.alarmTime)}</Label>}
+            <Label>{routine.subTasks.length}개 작업</Label>
           </View>
         </View>
 
@@ -125,13 +173,13 @@ const RoutineForm = () => {
             <Text className="text-lg font-bold text-black">하위 작업</Text>
             <View className="flex-row items-center gap-2">
               <Text className="text-sm text-gray">
-                {subTaskChecks.filter(Boolean).length}/{subTaskChecks.length}
+                {completedCount}/{totalCount}
               </Text>
               <View className="h-2 w-16 rounded-full bg-foggyBlue">
                 <View
                   className="h-2 rounded-full bg-paleCobalt"
                   style={{
-                    width: `${(subTaskChecks.filter(Boolean).length / subTaskChecks.length) * 100}%`,
+                    width: totalCount > 0 ? `${(completedCount / totalCount) * 100}%` : '0%',
                   }}
                 />
               </View>
@@ -140,7 +188,7 @@ const RoutineForm = () => {
 
           {/* 하위 작업 리스트 */}
           <View className="space-y-2">
-            {routineData.subTasks.map((task: any, index: number) => (
+            {routine.subTasks.map((task, index) => (
               <SubRoutineTaskCheckCard
                 key={task.id}
                 label={task.title}
@@ -155,17 +203,13 @@ const RoutineForm = () => {
         <View className="mb-6">
           <TouchableOpacity
             onPress={handleCompleteRoutine}
-            className={`rounded-xl py-4 ${
-              subTaskChecks.every(Boolean) ? 'bg-paleCobalt' : 'bg-foggyBlue'
-            }`}
-            disabled={!subTaskChecks.every(Boolean)}
+            className={`rounded-xl py-4 ${allTasksCompleted ? 'bg-paleCobalt' : 'bg-foggyBlue'}`}
+            disabled={!allTasksCompleted}
           >
             <Text
-              className={`text-center font-bold ${
-                subTaskChecks.every(Boolean) ? 'text-white' : 'text-gray'
-              }`}
+              className={`text-center font-bold ${allTasksCompleted ? 'text-white' : 'text-gray'}`}
             >
-              {subTaskChecks.every(Boolean) ? '루틴 완료!' : '모든 하위 작업을 완료해주세요'}
+              {allTasksCompleted ? '루틴 완료!' : '모든 하위 작업을 완료해주세요'}
             </Text>
           </TouchableOpacity>
         </View>
@@ -175,6 +219,7 @@ const RoutineForm = () => {
           <TouchableOpacity
             onPress={() => {
               /* TODO: 루틴 공유 */
+              Alert.alert('공유', '루틴 공유 기능은 준비 중입니다.');
             }}
             className="flex-row items-center justify-center rounded-xl bg-white py-3 shadow-sm"
           >
@@ -185,6 +230,7 @@ const RoutineForm = () => {
           <TouchableOpacity
             onPress={() => {
               /* TODO: 루틴 통계 보기 */
+              Alert.alert('통계', '루틴 통계 기능은 준비 중입니다.');
             }}
             className="flex-row items-center justify-center rounded-xl bg-white py-3 shadow-sm"
           >
