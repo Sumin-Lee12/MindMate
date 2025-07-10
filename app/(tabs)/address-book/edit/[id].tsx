@@ -15,6 +15,7 @@ const Edit = () => {
       <FormEditContact id={id} />
       <AddContactDetailGroupButton onPress={() => setIsModalVisible(true)} />
       <ContactDetailGroupSectionList id={id} isModalVisible={isModalVisible} />
+      <View className="h-20" />
       {isModalVisible && (
         <AddContactDetailGroupModal
           isModalVisible={isModalVisible}
