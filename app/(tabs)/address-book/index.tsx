@@ -4,14 +4,25 @@ import AddressBookSelfItem from '../../../src/features/address-book/components/a
 import AddressBookList from '../../../src/features/address-book/components/address-book-list.tsx';
 import { View } from 'react-native';
 import SearchInput from '../../../src/components/ui/search-input';
-
+import AddressBookAddButton from '../../../src/features/address-book/components/address-book-add-button';
 const AddressBook = () => {
   return (
-    <View className="gap-6 bg-turquoise px-4 pt-6">
-      <AddressBookSelfItem />
-      <SearchInput></SearchInput>
-      <AddressBookList />
-    </View>
+    <>
+      {/* 고정 영역들 */}
+      <View className="bg-turquoise px-4 pb-4 pt-6">
+        <AddressBookSelfItem />
+        <SearchInput />
+      </View>
+
+      {/* 스크롤 가능한 영역 */}
+      <View className="flex-1 bg-turquoise">
+        <AddressBookList />
+      </View>
+      {/* 추가하기 버튼 */}
+      <View className="absolute bottom-1 right-1">
+        <AddressBookAddButton />
+      </View>
+    </>
   );
 };
 
