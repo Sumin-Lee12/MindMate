@@ -156,7 +156,8 @@ export class DiaryService {
 
   /**
    * 일기와 대표 미디어를 함께 조회합니다 (목록 화면용)
-   * @returns 일기 목록과 첫 번째 미디어 정보
+   * 썸네일 우선순위: 이미지 > 동영상 > 없음
+   * @returns 일기 목록과 우선순위에 따른 미디어 정보
    */
   static async getAllDiariesWithMedia(): Promise<
     (DiaryTableType & { media_uri: string | null; media_type: string | null })[]
@@ -165,16 +166,23 @@ export class DiaryService {
       const result = await db.getAllAsync<
         DiaryTableType & { media_uri: string | null; media_type: string | null }
       >(
-        `SELECT d.*, m.file_path as media_uri, m.media_type
-       FROM diaries d
-       LEFT JOIN (
-         SELECT owner_id, MIN(id) as min_id
-         FROM media
-         WHERE owner_type = 'diary'
-         GROUP BY owner_id
-       ) first_media ON first_media.owner_id = d.id
-       LEFT JOIN media m ON m.id = first_media.min_id
-       ORDER BY d.created_at DESC`,
+        `SELECT d.*, 
+                COALESCE(img.file_path, vid.file_path) as media_uri,
+                COALESCE(img.media_type, vid.media_type) as media_type
+         FROM diaries d
+         LEFT JOIN (
+           SELECT owner_id, file_path, media_type, MIN(id) as min_id
+           FROM media
+           WHERE owner_type = 'diary' AND media_type = 'image'
+           GROUP BY owner_id
+         ) img ON img.owner_id = d.id
+         LEFT JOIN (
+           SELECT owner_id, file_path, media_type, MIN(id) as min_id
+           FROM media
+           WHERE owner_type = 'diary' AND media_type = 'video'
+           GROUP BY owner_id
+         ) vid ON vid.owner_id = d.id AND img.owner_id IS NULL
+         ORDER BY d.created_at DESC`,
       );
       return result || [];
     } catch (error) {

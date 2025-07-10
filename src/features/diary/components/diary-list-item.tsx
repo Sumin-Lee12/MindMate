@@ -11,10 +11,13 @@ type DiaryListItemProps = {
  * 일기 목록 아이템 컴포넌트
  */
 const DiaryListItem = ({ item, onPress, formatDateTime }: DiaryListItemProps) => {
-  const date = new Date(item.created_at ?? '');
+  // 수정 시간이 있으면 수정 시간 우선, 없으면 생성 시간
+  const displayTime = item.updated_at ?? item.created_at ?? '';
+  const date = new Date(displayTime);
   const day = date.getDate();
   const weekday = ['일', '월', '화', '수', '목', '금', '토'][date.getDay()];
-  const formatted = formatDateTime(item.created_at ?? '');
+  const formatted = formatDateTime(displayTime);
+  
 
   return (
     <Pressable

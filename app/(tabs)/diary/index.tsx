@@ -31,22 +31,16 @@ const DiaryListPage = () => {
     setSortOrder((prev) => (prev === 'desc' ? 'asc' : 'desc'));
   };
 
-  // 썸네일이 될 수 있는 image/video 미디어를 뒤에서부터 찾아 thumbnailUri 추가
-  const diariesWithThumbnail = diaries.map((item) => {
-    const mediaForThumbnail = [...(item.media ?? [])]
-      .reverse()
-      .find((m) => m.mediaType === 'image' || m.mediaType === 'video');
+  // 썸네일 URI 설정 (DiaryService에서 이미 우선순위가 적용됨: 이미지 > 동영상)
+  const diariesWithThumbnail = diaries.map((item) => ({
+    ...item,
+    thumbnailUri: item.media_uri, // 이미 우선순위가 적용된 미디어 URI
+  }));
 
-    return {
-      ...item,
-      thumbnailUri: mediaForThumbnail ? mediaForThumbnail.filePath : null,
-    };
-  });
-
-  // 정렬
+  // 정렬 (수정 시간 우선, 없으면 생성 시간)
   const sortedDiaries = [...diariesWithThumbnail].sort((a, b) => {
-    const dateA = new Date(a.created_at ?? '').getTime();
-    const dateB = new Date(b.created_at ?? '').getTime();
+    const dateA = new Date(a.updated_at ?? a.created_at ?? '').getTime();
+    const dateB = new Date(b.updated_at ?? b.created_at ?? '').getTime();
     return sortOrder === 'desc' ? dateB - dateA : dateA - dateB;
   });
 

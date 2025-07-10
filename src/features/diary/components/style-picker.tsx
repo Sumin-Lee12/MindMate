@@ -1,5 +1,13 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, Modal, ScrollView, Pressable } from 'react-native';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  Modal,
+  Pressable,
+  ScrollView,
+  StatusBar,
+} from 'react-native';
 import { Colors } from '../../../constants/colors';
 import { DiaryStyleType } from '../types';
 
@@ -19,34 +27,67 @@ const backgroundColors = ['#FFFFFF', '#F5F7FF', '#FFE5BC', '#C9EFEF', '#FFD7DD']
  */
 const StylePicker = ({ visible, onClose, style, onStyleChange }: StylePickerProps) => {
   return (
-    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
+    <Modal
+      visible={visible}
+      transparent
+      animationType="fade"
+      statusBarTranslucent={true}
+      onRequestClose={onClose}
+    >
       <Pressable
         style={{
           flex: 1,
           backgroundColor: 'rgba(0,0,0,0.5)',
           justifyContent: 'flex-end',
+          paddingTop: StatusBar.currentHeight || 0,
         }}
         onPress={onClose}
       >
-        <Pressable
-          onPress={(e) => e.stopPropagation()}
-          className="max-h-[80%] rounded-t-3xl bg-white px-6 pb-8 pt-6"
+        <View
+          onStartShouldSetResponder={() => true}
+          style={{
+            backgroundColor: 'white',
+            borderTopLeftRadius: 24,
+            borderTopRightRadius: 24,
+            paddingHorizontal: 24,
+            paddingTop: 24,
+            paddingBottom: 0,
+            height: '52%',
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            zIndex: 1000,
+          }}
         >
           <ScrollView showsVerticalScrollIndicator={false}>
-            <Text className="mb-4 text-center text-lg font-bold">스타일 설정</Text>
+            <Text
+              style={{ fontSize: 18, fontWeight: 'bold', textAlign: 'center', marginBottom: 16 }}
+            >
+              스타일 설정
+            </Text>
 
             {/* 글자 크기 */}
-            <Text className="mb-2 text-sm font-bold">글자 크기</Text>
-            <View className="mb-4 flex-row flex-wrap gap-2">
+            <Text style={{ fontWeight: 'bold', fontSize: 13, marginBottom: 8 }}>글자 크기</Text>
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>
               {fontSizes.map((size) => (
                 <TouchableOpacity
                   key={size}
                   onPress={() => onStyleChange({ ...style, fontSize: size })}
-                  className={`rounded-full px-4 py-2 ${
-                    style.fontSize === size ? 'bg-paleCobalt' : 'bg-foggyBlue'
-                  }`}
+                  style={{
+                    backgroundColor: style.fontSize === size ? Colors.paleCobalt : Colors.foggyBlue,
+                    borderRadius: 100,
+                    paddingVertical: 8,
+                    paddingHorizontal: 16,
+                    marginRight: 8,
+                    marginBottom: 8,
+                  }}
                 >
-                  <Text className={style.fontSize === size ? 'text-white' : 'text-black'}>
+                  <Text
+                    style={{
+                      color: style.fontSize === size ? 'white' : 'black',
+                    }}
+                  >
                     {size}
                   </Text>
                 </TouchableOpacity>
@@ -54,20 +95,25 @@ const StylePicker = ({ visible, onClose, style, onStyleChange }: StylePickerProp
             </View>
 
             {/* 텍스트 정렬 */}
-            <Text className="mb-2 text-sm font-bold">텍스트 정렬</Text>
-            <View className="mb-4 flex-row gap-2">
+            <Text style={{ fontWeight: 'bold', fontSize: 13, marginBottom: 8 }}>텍스트 정렬</Text>
+            <View style={{ flexDirection: 'row', gap: 8, marginBottom: 16 }}>
               {textAlignOptions.map((align) => (
                 <TouchableOpacity
                   key={align}
                   onPress={() => onStyleChange({ ...style, textAlign: align })}
-                  className={`flex-1 rounded-lg py-3 ${
-                    style.textAlign === align ? 'bg-paleCobalt' : 'bg-foggyBlue'
-                  }`}
+                  style={{
+                    flex: 1,
+                    backgroundColor:
+                      style.textAlign === align ? Colors.paleCobalt : Colors.foggyBlue,
+                    borderRadius: 8,
+                    paddingVertical: 12,
+                    alignItems: 'center',
+                  }}
                 >
                   <Text
-                    className={`text-center ${
-                      style.textAlign === align ? 'text-white' : 'text-black'
-                    }`}
+                    style={{
+                      color: style.textAlign === align ? 'white' : 'black',
+                    }}
                   >
                     {align === 'left' ? '왼쪽' : align === 'center' ? '가운데' : '오른쪽'}
                   </Text>
@@ -76,23 +122,28 @@ const StylePicker = ({ visible, onClose, style, onStyleChange }: StylePickerProp
             </View>
 
             {/* 배경색 */}
-            <Text className="mb-2 text-sm font-bold">배경색</Text>
-            <View className="mb-6 flex-row flex-wrap gap-2">
+            <Text style={{ fontWeight: 'bold', fontSize: 13, marginBottom: 8 }}>배경색</Text>
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12 }}>
               {backgroundColors.map((color) => (
                 <TouchableOpacity
                   key={color}
                   onPress={() => onStyleChange({ ...style, backgroundColor: color })}
-                  className="h-12 w-12 rounded-lg border-2"
                   style={{
+                    width: 48,
+                    height: 48,
+                    borderRadius: 8,
                     backgroundColor: color,
+                    borderWidth: 2,
                     borderColor:
                       style.backgroundColor === color ? Colors.paleCobalt : 'transparent',
+                    marginRight: 8,
+                    marginBottom: 8,
                   }}
                 />
               ))}
             </View>
           </ScrollView>
-        </Pressable>
+        </View>
       </Pressable>
     </Modal>
   );

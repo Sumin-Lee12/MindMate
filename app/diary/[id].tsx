@@ -7,11 +7,14 @@ import {
   SafeAreaView,
   Alert,
   ActivityIndicator,
+  Modal,
+  Pressable,
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { ChevronLeft, MoreVertical, Trash2, Edit3, Share2 } from 'lucide-react-native';
 import { DiaryService } from '../../src/features/diary/services';
 import { MediaSlider } from '../../src/features/diary/components/media-slider';
+import ExportModal from '../../src/features/diary/components/export-modal';
 import { formatDateTimeString } from '../../src/lib/date-utils';
 import { MOOD_OPTIONS } from '../../src/features/diary/types';
 import { Colors } from '../../src/constants/colors';
@@ -26,6 +29,7 @@ const DiaryDetailPage = () => {
   const [media, setMedia] = useState<DiaryMediaType>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showMenu, setShowMenu] = useState(false);
+  const [showExportModal, setShowExportModal] = useState(false);
 
   useEffect(() => {
     if (id && typeof id === 'string') {
@@ -85,10 +89,7 @@ const DiaryDetailPage = () => {
 
   const handleShare = () => {
     setShowMenu(false);
-    // TODO: PDF 변환 후 공유 로직
-    // 1) PDF 생성
-    // 2) Share API로 PDF 및 카카오톡 공유 호출
-    Alert.alert('준비중', '공유 기능은 준비중입니다.');
+    setShowExportModal(true);
   };
 
   const handleBack = () => router.back();
@@ -113,9 +114,19 @@ const DiaryDetailPage = () => {
   }
 
   const mood = diary.mood ? MOOD_OPTIONS.find((m) => m.value === diary.mood) : null;
+  
+  // 수정된 일기인지 확인 (수정 시간이 생성 시간과 다른 경우)
+  const isModified = diary.updated_at && diary.created_at && 
+    new Date(diary.updated_at).getTime() !== new Date(diary.created_at).getTime();
+  
+  // 표시할 시간 (수정 시간 우선, 없으면 생성 시간)
+  const displayTime = diary.updated_at ?? diary.created_at ?? '';
 
   return (
-    <SafeAreaView className="flex-1 bg-turquoise">
+    <SafeAreaView 
+      className="flex-1" 
+      style={{ backgroundColor: diary.background_color || '#87CEEB' }}
+    >
       <View className="mt-4 flex-row items-center justify-between px-4 py-4">
         <TouchableOpacity onPress={handleBack}>
           <ChevronLeft size={24} color={Colors.paleCobalt} />
@@ -126,26 +137,95 @@ const DiaryDetailPage = () => {
         </TouchableOpacity>
       </View>
 
+      {/* 메뉴 드롭다운 */}
       {showMenu && (
-        <View className="absolute right-4 top-16 z-10 rounded bg-white shadow-lg">
-          <TouchableOpacity onPress={handleEdit} className="border-b px-4 py-2">
-            <Text>수정</Text>
+        <View
+          style={{
+            position: 'absolute',
+            top: 60,
+            right: 16,
+            backgroundColor: 'white',
+            borderRadius: 12,
+            paddingVertical: 8,
+            minWidth: 120,
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.15,
+            shadowRadius: 8,
+            elevation: 5,
+            zIndex: 1000,
+          }}
+        >
+          <TouchableOpacity
+            onPress={handleEdit}
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              paddingHorizontal: 16,
+              paddingVertical: 12,
+            }}
+          >
+            <Edit3 size={16} color={Colors.paleCobalt} />
+            <Text style={{ marginLeft: 8, fontSize: 14, color: Colors.paleCobalt }}>수정하기</Text>
           </TouchableOpacity>
-          <TouchableOpacity onPress={handleShare} className="border-b px-4 py-2">
-            <Text>공유</Text>
+          
+          <TouchableOpacity
+            onPress={handleShare}
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              paddingHorizontal: 16,
+              paddingVertical: 12,
+            }}
+          >
+            <Share2 size={16} color={Colors.paleCobalt} />
+            <Text style={{ marginLeft: 8, fontSize: 14, color: Colors.paleCobalt }}>내보내기</Text>
           </TouchableOpacity>
-          <TouchableOpacity onPress={handleDelete} className="px-4 py-2">
-            <Text style={{ color: Colors.red }}>삭제</Text>
+          
+          <TouchableOpacity
+            onPress={handleDelete}
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              paddingHorizontal: 16,
+              paddingVertical: 12,
+            }}
+          >
+            <Trash2 size={16} color={Colors.red} />
+            <Text style={{ marginLeft: 8, fontSize: 14, color: Colors.red }}>삭제하기</Text>
           </TouchableOpacity>
         </View>
+      )}
+      
+      {/* 메뉴 외부 클릭 감지 */}
+      {showMenu && (
+        <Pressable
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: 999,
+          }}
+          onPress={() => setShowMenu(false)}
+        />
       )}
 
       <ScrollView className="flex-1">
         {/* 제목 및 날짜 */}
-        <View className="mx-4 mt-4 gap-4 rounded-xl bg-turquoise p-4">
-          <Text className="text-sm text-gray">
-            {diary.created_at ? formatDateTimeString(diary.created_at) : ''}
-          </Text>
+        <View 
+          className="mx-4 mt-4 gap-4 rounded-xl p-4"
+          style={{ backgroundColor: diary.background_color || '#87CEEB' }}
+        >
+          <View className="flex-row items-center">
+            <Text className="text-sm text-gray">
+              {displayTime ? formatDateTimeString(displayTime) : ''}
+            </Text>
+            {isModified && (
+              <Text className="ml-2 text-xs text-gray-500">(수정됨)</Text>
+            )}
+          </View>
           <Text
             className="mb-2 text-2xl font-bold"
             style={{
@@ -166,7 +246,10 @@ const DiaryDetailPage = () => {
         )}
 
         {/* 내용 */}
-        <View className="mx-4 mt-10 rounded-xl bg-turquoise p-4">
+        <View 
+          className="mx-4 mt-10 rounded-xl p-4"
+          style={{ backgroundColor: diary.background_color || '#87CEEB' }}
+        >
           <Text
             className="leading-6"
             style={{
@@ -183,10 +266,23 @@ const DiaryDetailPage = () => {
 
       {/* 하단 감정 표시 */}
       {mood && (
-        <View className="absolute bottom-16 left-0 right-0 flex-row items-center bg-turquoise px-4 py-4">
+        <View 
+          className="absolute bottom-16 left-0 right-0 flex-row items-center px-4 py-4"
+          style={{ backgroundColor: diary.background_color || '#87CEEB' }}
+        >
           <Text className="mr-2 text-2xl">{mood.emoji}</Text>
           <Text className="text-sm text-gray">오늘의 기분: {mood.label}</Text>
         </View>
+      )}
+
+      {/* 내보내기 모달 */}
+      {diary && (
+        <ExportModal
+          visible={showExportModal}
+          onClose={() => setShowExportModal(false)}
+          diary={diary}
+          media={media}
+        />
       )}
     </SafeAreaView>
   );
