@@ -65,7 +65,7 @@ const DiaryListPage = () => {
     try {
       setIsLoading(true);
       setErrorCount(0);
-      
+
       const result = await DiaryService.getAllDiariesWithMedia();
       setDiaries(result);
       if (!isSearchActive) {
@@ -73,13 +73,13 @@ const DiaryListPage = () => {
       }
     } catch (err) {
       console.error('일기 불러오기 실패:', err);
-      setErrorCount(prev => prev + 1);
-      
+      setErrorCount((prev) => prev + 1);
+
       // 에러가 3번 이상 발생하면 사용자에게 알림
       if (errorCount >= 2) {
         console.warn('일기 조회 에러가 반복 발생:', err);
       }
-      
+
       // 에러 발생 시 기존 데이터 유지 (빈 배열로 초기화 안함)
       if (diaries.length === 0) {
         setDiaries([]);
@@ -150,28 +150,28 @@ const DiaryListPage = () => {
             <View className="flex-row gap-3">
               <Pressable
                 onPress={() => router.push('/diary/trash')}
-                className="flex-row items-center gap-1 rounded-lg bg-white px-4 py-2.5 shadow-sm min-w-[70px]"
+                className="min-w-[70px] flex-row items-center gap-1 rounded-lg bg-white px-2.5 py-2.5 shadow-sm"
               >
                 <Trash2 color={'#576bcd'} size={16} />
                 <Text className="text-sm font-medium text-paleCobalt">휴지통</Text>
               </Pressable>
               <Pressable
                 onPress={() => router.push('/diary/stats')}
-                className="flex-row items-center gap-1 rounded-lg bg-white px-4 py-2.5 shadow-sm min-w-[70px]"
+                className="min-w-[70px] flex-row items-center gap-1 rounded-lg bg-white px-2.5 py-2.5 shadow-sm"
               >
                 <BarChart3 color={'#576bcd'} size={16} />
                 <Text className="text-sm font-medium text-paleCobalt">통계</Text>
               </Pressable>
               <Pressable
                 onPress={() => router.push('/diary/favorites')}
-                className="flex-row items-center gap-1 rounded-lg bg-white px-4 py-2.5 shadow-sm min-w-[70px]"
+                className="min-w-[70px] flex-row items-center gap-1 rounded-lg bg-white px-2.5 py-2.5 shadow-sm"
               >
                 <Star color={'#FFD700'} size={16} fill={'#FFD700'} />
                 <Text className="text-sm font-medium text-paleCobalt">즐겨찾기</Text>
               </Pressable>
               <Pressable
                 onPress={() => setShowSearchModal(true)}
-                className="flex-row items-center gap-1 rounded-lg bg-white px-4 py-2.5 shadow-sm min-w-[70px]"
+                className="min-w-[70px] flex-row items-center gap-1 rounded-lg bg-white px-2.5 py-2.5 shadow-sm"
               >
                 <Search color={'#576bcd'} size={16} />
                 <Text className="text-sm font-medium text-paleCobalt">검색</Text>
@@ -179,7 +179,7 @@ const DiaryListPage = () => {
               {isSearchActive && (
                 <Pressable
                   onPress={handleResetSearch}
-                  className="rounded-lg bg-paleYellow px-4 py-2.5 min-w-[70px]"
+                  className="min-w-[70px] rounded-lg bg-paleYellow px-4 py-2.5"
                 >
                   <Text className="text-sm font-medium text-paleCobalt">전체보기</Text>
                 </Pressable>
@@ -193,7 +193,9 @@ const DiaryListPage = () => {
           // 로딩 상태
           <View className="flex-1 items-center justify-center" style={{ marginTop: 100 }}>
             <ActivityIndicator size="large" color="#576bcd" />
-            <Text className="mt-4 text-center text-base text-paleCobalt">일기를 불러오는 중...</Text>
+            <Text className="mt-4 text-center text-base text-paleCobalt">
+              일기를 불러오는 중...
+            </Text>
           </View>
         ) : Object.keys(grouped).length === 0 ? (
           // 빈 상태 UI
