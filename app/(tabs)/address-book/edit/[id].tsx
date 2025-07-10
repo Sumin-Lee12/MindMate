@@ -22,6 +22,7 @@ const Edit = () => {
           isModalVisible={isModalVisible}
           setIsModalVisible={setIsModalVisible}
           id={id}
+          refetch={() => {}}
         />
       )}
     </>

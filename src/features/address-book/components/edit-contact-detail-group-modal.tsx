@@ -10,7 +10,7 @@ const EditContactDetailGroupModal = ({
   isModalVisible,
   setIsModalVisible,
   id,
-  refetch = () => {},
+  refetch,
   group,
 }: {
   isModalVisible: boolean;
