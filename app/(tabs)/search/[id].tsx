@@ -1,5 +1,5 @@
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
-import { FlatList, Image, Text, useWindowDimensions, View } from 'react-native';
+import { Alert, FlatList, Image, Text, useWindowDimensions, View } from 'react-native';
 import Button from '../../../src/components/ui/button';
 import { db } from '@/src/hooks/use-initialize-database';
 import { useCallback, useState } from 'react';
@@ -12,6 +12,8 @@ import {
   fetchGetMediaById,
   fetchGetSearchById,
 } from '@/src/features/search/search-services';
+import Toast from 'react-native-toast-message';
+import { deleteAlert } from '@/src/lib/common-alert';
 
 const ItemDetailScreen = () => {
   const { id } = useLocalSearchParams();
@@ -40,12 +42,19 @@ const ItemDetailScreen = () => {
   // 삭제 로직
   const handleDeleteSearch = async () => {
     try {
-      await fetchDeleteSearchById(+id);
-      // todo : toast alert가 있으면 좋을 듯
-      router.back();
+      deleteAlert({ text1: '삭제하시겠습니까?', text2: '', onPress: deleteSearchWithAlert });
     } catch (error) {
       alert(`검색 데이터를 삭제하는 데 실패했습니다.`);
     }
+  };
+
+  const deleteSearchWithAlert = async () => {
+    await fetchDeleteSearchById(+id);
+    router.back();
+    Toast.show({
+      type: 'success',
+      text1: '삭제가 완료되었습니다.',
+    });
   };
 
   const handleEdit = () => {
