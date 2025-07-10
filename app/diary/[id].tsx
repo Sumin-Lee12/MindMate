@@ -11,7 +11,7 @@ import {
   Pressable,
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { ChevronLeft, MoreVertical, Trash2, Edit3, Share2 } from 'lucide-react-native';
+import { ChevronLeft, MoreVertical, Trash2, Edit3, Share2, Star } from 'lucide-react-native';
 import { DiaryService } from '../../src/features/diary/services';
 import { MediaSlider } from '../../src/features/diary/components/media-slider';
 import ExportModal from '../../src/features/diary/components/export-modal';
@@ -92,6 +92,24 @@ const DiaryDetailPage = () => {
     setShowExportModal(true);
   };
 
+  const handleToggleFavorite = async () => {
+    try {
+      if (!id || typeof id !== 'string') return;
+
+      const numericId = parseInt(id, 10);
+      if (isNaN(numericId)) return;
+
+      await DiaryService.toggleFavorite(numericId);
+
+      // 일기 정보 다시 불러오기
+      const updatedDiary = await DiaryService.getDiaryById(numericId);
+      setDiary(updatedDiary);
+    } catch (error) {
+      console.error('즐겨찾기 토글 실패:', error);
+      Alert.alert('오류', '즐겨찾기 설정에 실패했습니다.');
+    }
+  };
+
   const handleBack = () => router.back();
 
   if (isLoading) {
@@ -114,17 +132,19 @@ const DiaryDetailPage = () => {
   }
 
   const mood = diary.mood ? MOOD_OPTIONS.find((m) => m.value === diary.mood) : null;
-  
+
   // 수정된 일기인지 확인 (수정 시간이 생성 시간과 다른 경우)
-  const isModified = diary.updated_at && diary.created_at && 
+  const isModified =
+    diary.updated_at &&
+    diary.created_at &&
     new Date(diary.updated_at).getTime() !== new Date(diary.created_at).getTime();
-  
+
   // 표시할 시간 (수정 시간 우선, 없으면 생성 시간)
   const displayTime = diary.updated_at ?? diary.created_at ?? '';
 
   return (
-    <SafeAreaView 
-      className="flex-1" 
+    <SafeAreaView
+      className="flex-1"
       style={{ backgroundColor: diary.background_color || '#87CEEB' }}
     >
       <View className="mt-4 flex-row items-center justify-between px-4 py-4">
@@ -132,9 +152,18 @@ const DiaryDetailPage = () => {
           <ChevronLeft size={24} color={Colors.paleCobalt} />
         </TouchableOpacity>
         <Text className="text-lg font-bold text-paleCobalt">나의 일기 상세보기</Text>
-        <TouchableOpacity onPress={() => setShowMenu((prev) => !prev)}>
-          <MoreVertical size={24} color={Colors.paleCobalt} />
-        </TouchableOpacity>
+        <View className="flex-row items-center gap-3">
+          <TouchableOpacity onPress={handleToggleFavorite}>
+            <Star
+              size={24}
+              color={diary?.is_favorite ? '#FFD700' : Colors.paleCobalt}
+              fill={diary?.is_favorite ? '#FFD700' : 'transparent'}
+            />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => setShowMenu((prev) => !prev)}>
+            <MoreVertical size={24} color={Colors.paleCobalt} />
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* 메뉴 드롭다운 */}
@@ -168,7 +197,7 @@ const DiaryDetailPage = () => {
             <Edit3 size={16} color={Colors.paleCobalt} />
             <Text style={{ marginLeft: 8, fontSize: 14, color: Colors.paleCobalt }}>수정하기</Text>
           </TouchableOpacity>
-          
+
           <TouchableOpacity
             onPress={handleShare}
             style={{
@@ -181,7 +210,7 @@ const DiaryDetailPage = () => {
             <Share2 size={16} color={Colors.paleCobalt} />
             <Text style={{ marginLeft: 8, fontSize: 14, color: Colors.paleCobalt }}>내보내기</Text>
           </TouchableOpacity>
-          
+
           <TouchableOpacity
             onPress={handleDelete}
             style={{
@@ -196,7 +225,7 @@ const DiaryDetailPage = () => {
           </TouchableOpacity>
         </View>
       )}
-      
+
       {/* 메뉴 외부 클릭 감지 */}
       {showMenu && (
         <Pressable
@@ -214,7 +243,7 @@ const DiaryDetailPage = () => {
 
       <ScrollView className="flex-1">
         {/* 제목 및 날짜 */}
-        <View 
+        <View
           className="mx-4 mt-4 gap-4 rounded-xl p-4"
           style={{ backgroundColor: diary.background_color || '#87CEEB' }}
         >
@@ -222,9 +251,7 @@ const DiaryDetailPage = () => {
             <Text className="text-sm text-gray">
               {displayTime ? formatDateTimeString(displayTime) : ''}
             </Text>
-            {isModified && (
-              <Text className="ml-2 text-xs text-gray-500">(수정됨)</Text>
-            )}
+            {isModified && <Text className="text-gray-500 ml-2 text-xs">(수정됨)</Text>}
           </View>
           <Text
             className="mb-2 text-2xl font-bold"
@@ -246,8 +273,8 @@ const DiaryDetailPage = () => {
         )}
 
         {/* 내용 */}
-        <View 
-          className="mx-4 mt-10 rounded-xl p-4"
+        <View
+          className="mx-4 mt-4 rounded-xl p-4"
           style={{ backgroundColor: diary.background_color || '#87CEEB' }}
         >
           <Text
@@ -266,7 +293,7 @@ const DiaryDetailPage = () => {
 
       {/* 하단 감정 표시 */}
       {mood && (
-        <View 
+        <View
           className="absolute bottom-16 left-0 right-0 flex-row items-center px-4 py-4"
           style={{ backgroundColor: diary.background_color || '#87CEEB' }}
         >

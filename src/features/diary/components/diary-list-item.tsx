@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, Pressable, Image } from 'react-native';
+import { MOOD_OPTIONS } from '../types';
 
 type DiaryListItemProps = {
   item: any;
@@ -18,6 +19,13 @@ const DiaryListItem = ({ item, onPress, formatDateTime }: DiaryListItemProps) =>
   const weekday = ['일', '월', '화', '수', '목', '금', '토'][date.getDay()];
   const formatted = formatDateTime(displayTime);
   
+  // 기분 이모티콘 찾기
+  const moodOption = item.mood ? MOOD_OPTIONS.find(m => m.value === item.mood) : null;
+  
+  // 본문 내용 한 줄 요약 (최대 50자)
+  const contentPreview = item.body 
+    ? item.body.replace(/\n/g, ' ').substring(0, 50) + (item.body.length > 50 ? '...' : '')
+    : '';
 
   return (
     <Pressable
@@ -34,7 +42,25 @@ const DiaryListItem = ({ item, onPress, formatDateTime }: DiaryListItemProps) =>
       <View className="flex-1 justify-between p-4">
         <View className="flex-row items-start justify-between">
           <View className="mr-3 flex-1">
-            <Text className="text-lg font-bold leading-tight text-black">{item.title}</Text>
+            <View className="flex-row items-center">
+              <Text 
+                className="text-lg font-bold leading-tight text-black flex-1" 
+                numberOfLines={1}
+                style={{ marginRight: 8 }}
+              >
+                {item.title}
+              </Text>
+              {moodOption && (
+                <Text className="text-lg" style={{ flexShrink: 0 }}>
+                  {moodOption.emoji}
+                </Text>
+              )}
+            </View>
+            {contentPreview && (
+              <Text className="mt-1 text-sm leading-relaxed text-gray-600" numberOfLines={1}>
+                {contentPreview}
+              </Text>
+            )}
           </View>
           {item.thumbnailUri ? (
             <Image

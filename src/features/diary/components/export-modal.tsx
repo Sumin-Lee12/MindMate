@@ -30,17 +30,16 @@ type ExportModalProps = {
  * 내보내기 모달 컴포넌트
  */
 const ExportModal = ({ visible, onClose, diary, media = [] }: ExportModalProps) => {
-  
   /**
    * PDF로 내보내기
    */
   const handlePdfExport = async () => {
     try {
       onClose();
-      
+
       // 이미지 파일들을 base64로 변환
       const imagePromises = media
-        .filter(m => m.mediaType === 'image')
+        .filter((m) => m.mediaType === 'image')
         .map(async (m) => {
           try {
             const base64 = await FileSystem.readAsStringAsync(m.filePath, {
@@ -52,14 +51,14 @@ const ExportModal = ({ visible, onClose, diary, media = [] }: ExportModalProps) 
             return null;
           }
         });
-      
+
       const imageBase64Array = await Promise.all(imagePromises);
-      const validImages = imageBase64Array.filter(img => img !== null);
-      
+      const validImages = imageBase64Array.filter((img) => img !== null);
+
       // 시간 포맷팅
       const displayTime = diary.updated_at ?? diary.created_at ?? '';
       const formattedDate = displayTime ? new Date(displayTime).toLocaleString('ko-KR') : '';
-      
+
       // HTML 템플릿 생성
       const htmlContent = `
         <!DOCTYPE html>
@@ -125,11 +124,15 @@ const ExportModal = ({ visible, onClose, diary, media = [] }: ExportModalProps) 
             ${diary.body || '내용 없음'}
           </div>
           
-          ${validImages.length > 0 ? `
+          ${
+            validImages.length > 0
+              ? `
             <div class="images">
-              ${validImages.map(img => `<img src="${img}" class="image" alt="일기 이미지" />`).join('')}
+              ${validImages.map((img) => `<img src="${img}" class="image" alt="일기 이미지" />`).join('')}
             </div>
-          ` : ''}
+          `
+              : ''
+          }
           
           <div class="footer">
             MindMate에서 생성된 일기
@@ -147,7 +150,7 @@ const ExportModal = ({ visible, onClose, diary, media = [] }: ExportModalProps) 
       // 파일명 생성
       const fileName = `${diary.title?.replace(/[^a-zA-Z0-9가-힣]/g, '_') || '일기'}_${new Date().toISOString().split('T')[0]}.pdf`;
       const newUri = `${FileSystem.documentDirectory}${fileName}`;
-      
+
       // 파일 이동
       await FileSystem.moveAsync({
         from: uri,
@@ -159,7 +162,6 @@ const ExportModal = ({ visible, onClose, diary, media = [] }: ExportModalProps) 
         mimeType: 'application/pdf',
         dialogTitle: '일기 PDF 공유',
       });
-
     } catch (error) {
       console.error('PDF 내보내기 실패:', error);
       Alert.alert('오류', 'PDF 생성 중 오류가 발생했습니다.');
@@ -172,11 +174,11 @@ const ExportModal = ({ visible, onClose, diary, media = [] }: ExportModalProps) 
   const handleTextShare = async () => {
     try {
       onClose();
-      
+
       // 간단한 텍스트 형태로 일기 내용 구성
       const displayTime = diary.updated_at ?? diary.created_at ?? '';
       const formattedDate = displayTime ? new Date(displayTime).toLocaleDateString('ko-KR') : '';
-      
+
       const shareText = `📝 ${diary.title || '일기'}
 
 📅 ${formattedDate}
@@ -203,13 +205,12 @@ ${diary.body || '내용 없음'}
           [
             {
               text: '내용 보기',
-              onPress: () => Alert.alert('일기 내용', shareText)
+              onPress: () => Alert.alert('일기 내용', shareText),
             },
-            { text: '확인' }
-          ]
+            { text: '확인' },
+          ],
         );
       }
-
     } catch (error) {
       console.error('텍스트 공유 실패:', error);
       Alert.alert('오류', '공유 중 오류가 발생했습니다.');
@@ -243,12 +244,14 @@ ${diary.body || '내용 없음'}
           }}
         >
           {/* 헤더 */}
-          <View style={{
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            marginBottom: 20,
-          }}>
+          <View
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: 20,
+            }}
+          >
             <Text style={{ fontSize: 18, fontWeight: 'bold', color: Colors.paleCobalt }}>
               내보내기
             </Text>

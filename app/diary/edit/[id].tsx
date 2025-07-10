@@ -15,7 +15,11 @@ import { Colors } from '../../../src/constants/colors';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { DiaryService } from '../../../src/features/diary/services';
-import { DiaryFormDataType, diaryFormSchema, DiaryMediaType as FormMediaType } from '../../../src/features/diary/types';
+import {
+  DiaryFormDataType,
+  diaryFormSchema,
+  DiaryMediaType as FormMediaType,
+} from '../../../src/features/diary/types';
 import MediaButtons from '../../../src/features/diary/components/media-buttons';
 import MediaPreview from '../../../src/features/diary/components/media-preview';
 import MoodPicker from '../../../src/features/diary/components/mood-picker';
@@ -23,12 +27,29 @@ import StylePicker from '../../../src/features/diary/components/style-picker';
 import { useAudioRecording } from '../../../src/features/diary/hooks/use-audio-recording';
 import { useMediaPicker } from '../../../src/features/diary/hooks/use-media-picker';
 import { formatDateTime } from '../../../src/lib/date-utils';
+import { DEFAULT_DIARY_STYLE } from '../../../src/features/diary/constants/style-options';
 
 type DiaryDetailType = Awaited<ReturnType<typeof DiaryService.getDiaryById>>;
 type DiaryMediaType = Awaited<ReturnType<typeof DiaryService.getMediaByDiaryId>>;
 
 /**
  * 일기 수정 페이지 컴포넌트
+ *
+ * 기존 일기를 불러와서 수정할 수 있는 페이지입니다.
+ * URL 파라미터로 전달받은 일기 ID를 사용하여 데이터를 불러옵니다.
+ *
+ * 주요 기능:
+ * - 기존 일기 데이터 로드 및 폼 초기화
+ * - 일기 내용, 스타일, 미디어 수정
+ * - 기존 미디어와 새 미디어 비교 및 처리
+ * - 수정 완료 후 메인 페이지로 이동
+ *
+ * @component
+ * @example
+ * ```tsx
+ * // URL: /diary/edit/123
+ * <Stack.Screen name="edit/[id]" component={DiaryEditPage} />
+ * ```
  */
 const DiaryEditPage = () => {
   const router = useRouter();
@@ -51,15 +72,8 @@ const DiaryEditPage = () => {
     defaultValues: {
       title: '',
       content: '',
-      mood: undefined,
       media: [],
-      style: {
-        fontFamily: 'default',
-        fontSize: 16,
-        textAlign: 'left',
-        textColor: '#000000',
-        backgroundColor: '#FFFFFF',
-      },
+      style: DEFAULT_DIARY_STYLE,
     },
   });
 
@@ -67,12 +81,18 @@ const DiaryEditPage = () => {
   const watchedMedia = watch('media');
   const watchedMood = watch('mood');
 
-  const { recordingState, audioUri, handleAudioRecording } = useAudioRecording(
-    watchedMedia,
-    setValue,
-  );
+  const {
+    recordingState,
+    audioUri,
+    handleAudioRecording,
+    uploadState: audioUploadState,
+  } = useAudioRecording(watchedMedia, setValue);
 
-  const { handleImagePicker, handleVideoPicker } = useMediaPicker(watchedMedia, setValue);
+  const {
+    handleImagePicker,
+    handleVideoPicker,
+    uploadState: mediaUploadState,
+  } = useMediaPicker(watchedMedia, setValue);
 
   useEffect(() => {
     const updateTime = () => setCurrentDateTime(formatDateTime());
@@ -95,15 +115,15 @@ const DiaryEditPage = () => {
         DiaryService.getDiaryById(diaryId),
         DiaryService.getMediaByDiaryId(diaryId),
       ]);
-      
+
       if (diaryData) {
         setDiary(diaryData);
         setExistingMedia(mediaData);
-        
+
         // 폼 초기값 설정
         setValue('title', diaryData.title || '');
         setValue('content', diaryData.body || '');
-        setValue('mood', diaryData.mood as any || undefined);
+        setValue('mood', (diaryData.mood as any) || undefined);
         setValue('style', {
           fontFamily: diaryData.font || 'default',
           fontSize: diaryData.font_size || 16,
@@ -111,16 +131,15 @@ const DiaryEditPage = () => {
           textColor: diaryData.text_color || '#000000',
           backgroundColor: diaryData.background_color || '#FFFFFF',
         });
-        
+
         // 기존 미디어를 폼 미디어로 변환
-        const formMedia: FormMediaType[] = mediaData.map(media => ({
+        const formMedia: FormMediaType[] = mediaData.map((media) => ({
           id: media.id.toString(),
           type: media.mediaType as 'image' | 'video' | 'audio',
           uri: media.filePath,
         }));
         setValue('media', formMedia);
       }
-      
     } catch (error) {
       console.error('일기 불러오기 실패:', error);
       Alert.alert('오류', '일기를 불러오는데 실패했습니다.');
@@ -130,7 +149,9 @@ const DiaryEditPage = () => {
   };
 
   /**
-   * 미디어 제거
+   * 수정 중인 일기에서 미디어 파일을 제거합니다
+   *
+   * @param id - 제거할 미디어의 고유 ID
    */
   const handleRemoveMedia = (id: string) => {
     setValue(
@@ -140,9 +161,20 @@ const DiaryEditPage = () => {
   };
 
   /**
-   * 일기 수정
+   * 수정된 일기 데이터를 데이터베이스에 업데이트합니다
+   *
+   * 일기 정보를 먼저 업데이트한 후, 기존 미디어와 새 미디어를 비교하여
+   * 변경된 미디어만 처리합니다. 성공 시 메인 일기 목록 페이지로 이동합니다.
+   *
+   * @param data - React Hook Form에서 수집된 수정된 일기 데이터
    */
   const onSubmit = async (data: DiaryFormDataType) => {
+    // 업로드 중일 때는 제출 방지
+    if (audioUploadState.isUploading || mediaUploadState.isUploading) {
+      Alert.alert('업로드 중', '미디어 업로드가 완료될 때까지 기다려주세요.');
+      return;
+    }
+
     try {
       if (!diary || !id || typeof id !== 'string') {
         Alert.alert('오류', '일기 정보를 찾을 수 없습니다.');
@@ -171,12 +203,12 @@ const DiaryEditPage = () => {
 
       // 기존 미디어 삭제 후 새 미디어 추가
       // TODO: 기존 미디어와 새 미디어 비교해서 변경된 것만 처리하는 로직 추가 가능
-      
+
       // 새 미디어 추가
-      const newMediaFiles = data.media.filter(media => 
-        !existingMedia.some(existing => existing.filePath === media.uri)
+      const newMediaFiles = data.media.filter(
+        (media) => !existingMedia.some((existing) => existing.filePath === media.uri),
       );
-      
+
       for (const media of newMediaFiles) {
         await DiaryService.addMedia({
           ownerType: 'diary' as const,
@@ -187,11 +219,25 @@ const DiaryEditPage = () => {
       }
 
       Alert.alert('성공', '일기가 수정되었습니다.', [
-        { text: '확인', onPress: () => router.back() },
+        { text: '확인', onPress: () => router.replace('/(tabs)/diary') },
       ]);
     } catch (error) {
       console.error('일기 수정 실패:', error);
       Alert.alert('오류', '일기 수정 중 오류가 발생했습니다.');
+    }
+  };
+
+  /**
+   * 폼 제출 실패 시 에러 처리 (유효성 검사 실패)
+   */
+  const onSubmitError = (errors: any) => {
+    const errorMessages = [];
+    if (errors.title) errorMessages.push(errors.title.message || '제목을 입력해주세요');
+    if (errors.content) errorMessages.push(errors.content.message || '내용을 입력해주세요');
+    if (errors.mood) errorMessages.push(errors.mood.message || '오늘의 기분을 선택해주세요');
+
+    if (errorMessages.length > 0) {
+      Alert.alert('입력 확인', errorMessages.join('\n'));
     }
   };
 
@@ -249,7 +295,6 @@ const DiaryEditPage = () => {
               />
             )}
           />
-          {errors.title && <Text className="text-red px-4 text-sm">{errors.title.message}</Text>}
 
           <View className="w-full flex-row">
             <View className="flex-1 p-4 pr-4">
@@ -264,7 +309,7 @@ const DiaryEditPage = () => {
                     placeholderTextColor={Colors.black}
                     multiline
                     textAlignVertical="top"
-                    className="min-h-[100px] text-md font-normal"
+                    className="min-h-[80px] text-md font-normal"
                     style={{
                       borderWidth: 0,
                       fontSize: watchedStyle.fontSize,
@@ -276,7 +321,6 @@ const DiaryEditPage = () => {
                   />
                 )}
               />
-              {errors.content && <Text className="text-red text-sm">{errors.content.message}</Text>}
             </View>
 
             <MediaButtons
@@ -288,7 +332,11 @@ const DiaryEditPage = () => {
             />
           </View>
 
-          <MediaPreview media={watchedMedia} onRemove={handleRemoveMedia} />
+          <MediaPreview
+            media={watchedMedia}
+            onRemove={handleRemoveMedia}
+            isUploading={audioUploadState.isUploading || mediaUploadState.isUploading}
+          />
         </View>
 
         {/* 날짜 및 기분 */}
@@ -315,10 +363,21 @@ const DiaryEditPage = () => {
       <View className="absolute bottom-10 left-0 right-0 bg-white px-4 pb-6 pt-4">
         <View className="flex-row gap-4">
           <TouchableOpacity
-            onPress={handleSubmit(onSubmit)}
-            className="flex-1 items-center justify-center rounded-lg bg-paleCobalt py-4"
+            onPress={handleSubmit(onSubmit, onSubmitError)}
+            className="flex-1 items-center justify-center rounded-lg py-4"
+            style={{
+              backgroundColor:
+                audioUploadState.isUploading || mediaUploadState.isUploading
+                  ? Colors.gray
+                  : Colors.paleCobalt,
+            }}
+            disabled={audioUploadState.isUploading || mediaUploadState.isUploading}
           >
-            <Text className="text-md font-bold text-white">수정하기</Text>
+            <Text className="text-md font-bold text-white">
+              {audioUploadState.isUploading || mediaUploadState.isUploading
+                ? '업로드 중...'
+                : '수정하기'}
+            </Text>
           </TouchableOpacity>
           <TouchableOpacity
             onPress={handleCancel}

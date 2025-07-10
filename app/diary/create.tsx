@@ -22,9 +22,26 @@ import StylePicker from '../../src/features/diary/components/style-picker';
 import { useAudioRecording } from '../../src/features/diary/hooks/use-audio-recording';
 import { useMediaPicker } from '../../src/features/diary/hooks/use-media-picker';
 import { formatDateTime } from '../../src/lib/date-utils';
+import { DEFAULT_DIARY_STYLE } from '../../src/features/diary/constants/style-options';
 
 /**
  * 일기 작성 페이지 컴포넌트
+ *
+ * 사용자가 새로운 일기를 작성할 수 있는 페이지입니다.
+ * React Hook Form과 Zod를 사용하여 폼 유효성 검사를 수행합니다.
+ *
+ * 주요 기능:
+ * - 일기 제목 및 내용 입력
+ * - 이미지, 비디오, 음성 파일 체부
+ * - 기분 선택 및 스타일 커스터마이징
+ * - 실시간 날짜/시간 표시
+ *
+ * @component
+ * @example
+ * ```tsx
+ * // 라우터에서 사용
+ * <Stack.Screen name="create" component={DiaryCreatePage} />
+ * ```
  */
 const DiaryCreatePage = () => {
   const router = useRouter();
@@ -43,15 +60,8 @@ const DiaryCreatePage = () => {
     defaultValues: {
       title: '',
       content: '',
-      mood: undefined,
       media: [],
-      style: {
-        fontFamily: 'default',
-        fontSize: 16,
-        textAlign: 'left',
-        textColor: '#000000',
-        backgroundColor: '#FFFFFF',
-      },
+      style: DEFAULT_DIARY_STYLE,
     },
   });
 
@@ -59,12 +69,18 @@ const DiaryCreatePage = () => {
   const watchedMedia = watch('media');
   const watchedMood = watch('mood');
 
-  const { recordingState, audioUri, handleAudioRecording } = useAudioRecording(
-    watchedMedia,
-    setValue,
-  );
+  const {
+    recordingState,
+    audioUri,
+    handleAudioRecording,
+    uploadState: audioUploadState,
+  } = useAudioRecording(watchedMedia, setValue);
 
-  const { handleImagePicker, handleVideoPicker } = useMediaPicker(watchedMedia, setValue);
+  const {
+    handleImagePicker,
+    handleVideoPicker,
+    uploadState: mediaUploadState,
+  } = useMediaPicker(watchedMedia, setValue);
 
   useEffect(() => {
     const updateTime = () => setCurrentDateTime(formatDateTime());
@@ -74,7 +90,9 @@ const DiaryCreatePage = () => {
   }, []);
 
   /**
-   * 미디어 제거
+   * 선택된 미디어 파일을 목록에서 제거합니다
+   *
+   * @param id - 제거할 미디어의 고유 ID
    */
   const handleRemoveMedia = (id: string) => {
     setValue(
@@ -84,9 +102,20 @@ const DiaryCreatePage = () => {
   };
 
   /**
-   * 일기 저장
+   * 작성된 일기를 데이터베이스에 저장합니다
+   *
+   * 일기 데이터를 먼저 생성한 후, 체부된 미디어 파일들을 순차적으로 추가합니다.
+   * 성공 시 메인 일기 목록 페이지로 이동합니다.
+   *
+   * @param data - React Hook Form에서 수집된 일기 데이터
    */
   const onSubmit = async (data: DiaryFormDataType) => {
+    // 업로드 중일 때는 제출 방지
+    if (audioUploadState.isUploading || mediaUploadState.isUploading) {
+      Alert.alert('업로드 중', '미디어 업로드가 완료될 때까지 기다려주세요.');
+      return;
+    }
+
     try {
       const mediaFiles = data.media.map((media) => ({
         ownerType: 'diary' as const,
@@ -114,11 +143,25 @@ const DiaryCreatePage = () => {
       }
 
       Alert.alert('성공', '일기가 저장되었습니다.', [
-        { text: '확인', onPress: () => router.back() },
+        { text: '확인', onPress: () => router.replace('/(tabs)/diary') },
       ]);
     } catch (error) {
       console.error('일기 저장 실패:', error);
       Alert.alert('오류', '일기 저장 중 오류가 발생했습니다.');
+    }
+  };
+
+  /**
+   * 폼 제출 실패 시 에러 처리 (유효성 검사 실패)
+   */
+  const onSubmitError = (errors: any) => {
+    const errorMessages = [];
+    if (errors.title) errorMessages.push(errors.title.message || '제목을 입력해주세요');
+    if (errors.content) errorMessages.push(errors.content.message || '내용을 입력해주세요');
+    if (errors.mood) errorMessages.push(errors.mood.message || '오늘의 기분을 선택해주세요');
+
+    if (errorMessages.length > 0) {
+      Alert.alert('입력 확인', errorMessages.join('\n'));
     }
   };
 
@@ -168,7 +211,6 @@ const DiaryCreatePage = () => {
               />
             )}
           />
-          {errors.title && <Text className="text-red px-4 text-sm">{errors.title.message}</Text>}
 
           <View className="w-full flex-row">
             <View className="flex-1 p-4 pr-4">
@@ -183,7 +225,7 @@ const DiaryCreatePage = () => {
                     placeholderTextColor={Colors.black}
                     multiline
                     textAlignVertical="top"
-                    className="min-h-[100px] text-md font-normal"
+                    className="min-h-[80px] text-md font-normal"
                     style={{
                       borderWidth: 0,
                       fontSize: watchedStyle.fontSize,
@@ -195,7 +237,6 @@ const DiaryCreatePage = () => {
                   />
                 )}
               />
-              {errors.content && <Text className="text-red text-sm">{errors.content.message}</Text>}
             </View>
 
             <MediaButtons
@@ -207,7 +248,11 @@ const DiaryCreatePage = () => {
             />
           </View>
 
-          <MediaPreview media={watchedMedia} onRemove={handleRemoveMedia} />
+          <MediaPreview
+            media={watchedMedia}
+            onRemove={handleRemoveMedia}
+            isUploading={audioUploadState.isUploading || mediaUploadState.isUploading}
+          />
         </View>
 
         {/* 날짜 및 기분 */}
@@ -234,10 +279,21 @@ const DiaryCreatePage = () => {
       <View className="absolute bottom-10 left-0 right-0 bg-white px-4 pb-6 pt-4">
         <View className="flex-row gap-4">
           <TouchableOpacity
-            onPress={handleSubmit(onSubmit)}
-            className="flex-1 items-center justify-center rounded-lg bg-paleCobalt py-4"
+            onPress={handleSubmit(onSubmit, onSubmitError)}
+            className="flex-1 items-center justify-center rounded-lg py-4"
+            style={{
+              backgroundColor:
+                audioUploadState.isUploading || mediaUploadState.isUploading
+                  ? Colors.gray
+                  : Colors.paleCobalt,
+            }}
+            disabled={audioUploadState.isUploading || mediaUploadState.isUploading}
           >
-            <Text className="text-md font-bold text-white">등록하기</Text>
+            <Text className="text-md font-bold text-white">
+              {audioUploadState.isUploading || mediaUploadState.isUploading
+                ? '업로드 중...'
+                : '등록하기'}
+            </Text>
           </TouchableOpacity>
           <TouchableOpacity
             onPress={handleCancel}

@@ -30,6 +30,10 @@ export type DiaryTableType = {
   created_at: string | null;
   /** 수정 일시 */
   updated_at: string | null;
+  /** 삭제 일시 */
+  deleted_at: string | null;
+  /** 즐겨찾기 여부 */
+  is_favorite: number | null;
 };
 
 /**

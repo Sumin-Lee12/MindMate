@@ -25,7 +25,7 @@ const MediaButtons = ({
       <View className="items-center">
         <TouchableOpacity
           onPress={onImagePress}
-          className="h-16 w-16 items-center justify-center rounded-full border border-paleCobalt"
+          className="h-16 w-16 items-center justify-center rounded-full border-2 border-paleCobalt"
         >
           <ImageIcon size={32} color={Colors.paleCobalt} />
         </TouchableOpacity>
@@ -36,7 +36,7 @@ const MediaButtons = ({
       <View className="items-center">
         <TouchableOpacity
           onPress={onVideoPress}
-          className="h-16 w-16 items-center justify-center rounded-full border border-paleCobalt"
+          className="h-16 w-16 items-center justify-center rounded-full border-2 border-paleCobalt"
         >
           <Video size={32} color={Colors.paleCobalt} />
         </TouchableOpacity>
@@ -67,7 +67,7 @@ const MediaButtons = ({
       <View className="items-center">
         <TouchableOpacity
           onPress={onStylePress}
-          className="h-16 w-16 items-center justify-center rounded-full border border-paleCobalt"
+          className="h-16 w-16 items-center justify-center rounded-full border-2 border-paleCobalt"
         >
           <Text className="text-lg font-bold text-paleCobalt">Aa</Text>
         </TouchableOpacity>

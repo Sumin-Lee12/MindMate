@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { View, Image, TouchableOpacity, Dimensions, Text, StyleSheet } from 'react-native';
 import { ChevronLeft, ChevronRight, Mic, Play, Pause } from 'lucide-react-native';
-import { Video, ResizeMode } from 'expo-av';
+import { Video, ResizeMode, AVPlaybackStatus } from 'expo-av';
 import { Audio } from 'expo-av';
 import { Colors } from '../../../constants/colors';
 
@@ -18,7 +18,11 @@ const { width: screenWidth } = Dimensions.get('window');
 const MediaSlider = ({ media }: MediaSliderProps) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [sound, setSound] = useState<Audio.Sound | null>(null);
-  const [isPlaying, setIsPlaying] = useState(false);
+  const [isAudioPlaying, setIsAudioPlaying] = useState(false);
+  const [isVideoPlaying, setIsVideoPlaying] = useState(false);
+  const [isVideoLoading, setIsVideoLoading] = useState(false);
+  const [videoError, setVideoError] = useState<string | null>(null);
+  const videoRef = useRef<Video>(null);
 
   const currentMedia = media[currentIndex];
 
@@ -32,7 +36,7 @@ const MediaSlider = ({ media }: MediaSliderProps) => {
 
   const handleAudioPress = async () => {
     try {
-      if (!isPlaying) {
+      if (!isAudioPlaying) {
         if (sound) {
           await sound.unloadAsync();
         }
@@ -43,7 +47,7 @@ const MediaSlider = ({ media }: MediaSliderProps) => {
         );
 
         setSound(newSound);
-        setIsPlaying(true);
+        setIsAudioPlaying(true);
 
         newSound.setOnPlaybackStatusUpdate((status) => {
           if (!status.isLoaded) {
@@ -52,14 +56,14 @@ const MediaSlider = ({ media }: MediaSliderProps) => {
           }
 
           if (!status.isPlaying && status.didJustFinish) {
-            setIsPlaying(false);
+            setIsAudioPlaying(false);
             setSound(null);
           }
         });
       } else {
         if (sound) {
           await sound.pauseAsync();
-          setIsPlaying(false);
+          setIsAudioPlaying(false);
         }
       }
     } catch (error) {
@@ -67,12 +71,54 @@ const MediaSlider = ({ media }: MediaSliderProps) => {
     }
   };
 
-  // 슬라이드 변경 시 기존 사운드 정리
+  const handleVideoPress = async () => {
+    try {
+      setVideoError(null);
+      
+      if (!isVideoPlaying) {
+        setIsVideoLoading(true);
+        await videoRef.current?.playAsync();
+      } else {
+        await videoRef.current?.pauseAsync();
+      }
+    } catch (error) {
+      console.error('비디오 재생 오류:', error);
+      setVideoError('비디오를 재생할 수 없습니다');
+      setIsVideoLoading(false);
+    }
+  };
+
+  const onVideoPlaybackStatusUpdate = (status: AVPlaybackStatus) => {
+    if (status.isLoaded) {
+      setIsVideoPlaying(status.isPlaying);
+      setIsVideoLoading(false);
+      
+      if (status.didJustFinish) {
+        setIsVideoPlaying(false);
+      }
+    } else if ('error' in status) {
+      console.error('비디오 로딩 오류:', status.error);
+      setVideoError('비디오를 로드할 수 없습니다');
+      setIsVideoLoading(false);
+      setIsVideoPlaying(false);
+    }
+  };
+
+  // 슬라이드 변경 시 미디어 정리
   useEffect(() => {
-    setIsPlaying(false);
+    setIsAudioPlaying(false);
+    setIsVideoPlaying(false);
+    setIsVideoLoading(false);
+    setVideoError(null);
+    
     if (sound) {
       sound.unloadAsync();
       setSound(null);
+    }
+    
+    // 비디오 일시정지
+    if (videoRef.current) {
+      videoRef.current.pauseAsync();
     }
   }, [currentIndex]);
 
@@ -96,21 +142,49 @@ const MediaSlider = ({ media }: MediaSliderProps) => {
             resizeMode="contain"
           />
         ) : currentMedia.mediaType === 'video' ? (
-          <Video
-            source={{ uri: currentMedia.filePath }}
-            style={styles.media}
-            resizeMode={ResizeMode.CONTAIN}
-            useNativeControls
-            isLooping
-          />
+          <View style={styles.media}>
+            <Video
+              ref={videoRef}
+              source={{ uri: currentMedia.filePath }}
+              style={styles.media}
+              resizeMode={ResizeMode.CONTAIN}
+              useNativeControls={true}
+              isLooping={false}
+              shouldPlay={false}
+              onPlaybackStatusUpdate={onVideoPlaybackStatusUpdate}
+              onError={(error) => {
+                console.error('Video error:', error);
+                setVideoError('비디오 파일을 재생할 수 없습니다');
+                setIsVideoLoading(false);
+              }}
+              onLoadStart={() => {
+                setIsVideoLoading(true);
+                setVideoError(null);
+              }}
+              onLoad={() => {
+                setIsVideoLoading(false);
+              }}
+            />
+            {(videoError || isVideoLoading) && (
+              <View style={styles.videoControlOverlay}>
+                <View style={styles.videoControlButton}>
+                  {videoError ? (
+                    <Text style={styles.errorText}>재생 불가</Text>
+                  ) : (
+                    <Text style={styles.loadingText}>로딩 중...</Text>
+                  )}
+                </View>
+              </View>
+            )}
+          </View>
         ) : currentMedia.mediaType === 'audio' ? (
           <TouchableOpacity onPress={handleAudioPress} style={styles.audioContainer}>
-            {isPlaying ? (
+            {isAudioPlaying ? (
               <Pause size={48} color={Colors.paleCobalt} />
             ) : (
               <Play size={48} color={Colors.paleCobalt} />
             )}
-            <Text style={styles.audioText}>{isPlaying ? '재생 중...' : '음성 파일 재생'}</Text>
+            <Text style={styles.audioText}>{isAudioPlaying ? '재생 중...' : '음성 파일 재생'}</Text>
           </TouchableOpacity>
         ) : null}
       </View>
@@ -218,6 +292,35 @@ const styles = StyleSheet.create({
   },
   inactiveDot: {
     backgroundColor: '#999999',
+  },
+  videoControlOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'transparent',
+  },
+  videoControlButton: {
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    borderRadius: 30,
+    padding: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    minWidth: 80,
+    minHeight: 60,
+  },
+  errorText: {
+    color: 'white',
+    fontSize: 12,
+    textAlign: 'center',
+  },
+  loadingText: {
+    color: 'white',
+    fontSize: 12,
+    textAlign: 'center',
   },
 });
 
