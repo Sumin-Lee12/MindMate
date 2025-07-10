@@ -8,7 +8,7 @@ import {
   Platform,
 } from 'react-native';
 import Button from '@/src/components/ui/button';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import SearchLabelInput from '@/src/features/search/components/search-label-input';
 import SearchCategoryPicker from '@/src/features/search/components/search-category-picker';
 import { db } from '@/src/hooks/use-initialize-database';
@@ -16,17 +16,25 @@ import { searchCategoryLabels } from '@/src/features/search/constants/search-cat
 import { SearchCategoryLabel } from '@/src/features/search/db/search-db-types';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SearchFormSchema, searchFormSchema } from '@/src/features/search/utils/search-form-schema';
 import ImageButton from '@/src/components/ui/image-button';
 import { MediaType } from '@/src/types/common-db-types';
-import { insertMedia, pickMedia } from '@/src/lib/media-services';
-import { insertSearch } from '@/src/features/search/search-services';
+import {  fetchInsertMedia, pickMedia } from '@/src/lib/media-services';
+import {
+  fetchGetMediaById,
+  fetchGetSearchById,
+  fetchInsertSearch,
+  fetchUpdateSearchById,
+  
+} from '@/src/features/search/search-services';
+import Toast from 'react-native-toast-message';
 
 const SearchForm = () => {
   const router = useRouter();
   const [images, setImages] = useState<MediaType[]>([]);
-  const [id, setId] = useState(0);
+  const params = useLocalSearchParams();
+  const id = params.id;
 
   // dropdown 상태
   const [open, setOpen] = useState(false);
@@ -34,11 +42,36 @@ const SearchForm = () => {
     Object.values(searchCategoryLabels).map((label) => ({ label, value: label })),
   );
 
+  const initializeForm = async () => {
+    try {
+      if (!id) return;
+      const [search, media] = await Promise.all([fetchGetSearchById(+id), fetchGetMediaById(+id)]);
+      const convertedMedia = media.map((item) => ({
+        uri: item.file_path,
+        type: item.media_type as MediaType['type'],
+      }));
+      setImages(convertedMedia);
+
+      reset({
+        name: search.name,
+        category: search.category,
+        location: search.location,
+        description: search.description ?? '',
+      });
+    } catch (error) {
+      alert('폼 초기화 오류:');
+    }
+  };
+  useEffect(() => {
+    initializeForm();
+  }, []);
+
   // react-hook-form 설정
   // zod를 이용한 유효성 검사
   const {
     control,
     handleSubmit,
+    reset,
     formState: { errors },
   } = useForm({
     resolver: zodResolver(searchFormSchema),
@@ -54,15 +87,39 @@ const SearchForm = () => {
   const handleFormSubmit = async (data: SearchFormSchema) => {
     try {
       await db.withTransactionAsync(async () => {
-        const lastInsertRowId = await insertSearch(data);
-        setId(lastInsertRowId);
+        const lastInsertRowId = await fetchInsertSearch(data);
         if (images.length > 0) {
-          await insertMedia(images, 'search', id);
+          await fetchInsertMedia(images, 'search', lastInsertRowId);
         }
       });
       router.back();
+      Toast.show({
+        type: 'success',
+        text1: '등록이 완료되었습니다.',
+      });
     } catch (error) {
-      console.error('폼 제출 오류:', error);
+      Toast.show({
+        type: 'error',
+        text1: '등록에 실패했습니다.',
+      });
+      return;
+    }
+  };
+
+  // 폼 업데이트 함수
+  const handleFormUpdate = async (data: SearchFormSchema) => {
+    try {
+      await fetchUpdateSearchById(+id, data, images);
+      router.back();
+      Toast.show({
+        type: 'success',
+        text1: '수정이 완료되었습니다.',
+      });
+    } catch (error) {
+      Toast.show({
+        type: 'error',
+        text1: '수정에 실패했습니다.',
+      });
       return;
     }
   };
@@ -113,10 +170,9 @@ const SearchForm = () => {
                       value={value}
                       items={items}
                       setOpen={setOpen}
-                      setValue={onChange}
+                      setValue={(val) => onChange(typeof val === 'function' ? val(value) : val)}
                       setItems={setItems}
                       onPress={Keyboard.dismiss}
-                      onChangeValue={(val) => onChange(val)}
                     />
                   )}
                 />
@@ -174,10 +230,16 @@ const SearchForm = () => {
             </View>
             <View className="w-full items-center bg-turquoise pb-6">
               <Button
-                className="h-[50px] w-3/4 rounded-xl bg-paleCobalt "
-                onPress={handleSubmit(handleFormSubmit)}
+                className="h-[50px] w-full rounded-xl bg-paleCobalt "
+                onPress={
+                  id
+                    ? () => handleSubmit(handleFormUpdate)()
+                    : () => handleSubmit(handleFormSubmit)()
+                }
               >
-                <Text className="text-center text-lg text-white">등록하기</Text>
+                <Text className="text-center text-lg text-white">
+                  {id ? '수정하기' : '등록하기'}
+                </Text>
               </Button>
             </View>
           </ScrollView>
