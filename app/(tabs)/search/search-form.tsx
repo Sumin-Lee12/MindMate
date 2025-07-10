@@ -100,7 +100,6 @@ const SearchForm = () => {
   // 폼 업데이트 함수
   const handleFormUpdate = async (data: SearchFormSchema) => {
     try {
-      console.log(data);
       await fetchUpdateSearchById(+id, data, images);
       router.back();
     } catch (error) {
