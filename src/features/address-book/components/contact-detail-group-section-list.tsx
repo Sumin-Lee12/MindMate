@@ -73,7 +73,7 @@ const ContactDetailGroupList = ({ group, refetch }: { group: NoteGroup; refetch:
         </TouchableOpacity>
       </View>
       {data?.map((item) => {
-        return <ContactDetailGroupItem key={item.item_id} item={item} refetch={refetch} />;
+        return <ContactDetailGroupItem key={item.item_id} item={item} refetch={noteItemRefetch} />;
       })}
       <AddContactDetailGroupItemButton refetch={noteItemRefetch} group={group} />
       {isModalVisible && (
@@ -81,7 +81,7 @@ const ContactDetailGroupList = ({ group, refetch }: { group: NoteGroup; refetch:
           isModalVisible={isModalVisible}
           setIsModalVisible={setIsModalVisible}
           group={group}
-          refetch={noteItemRefetch}
+          refetch={refetch}
         />
       )}
 
