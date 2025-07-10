@@ -97,7 +97,7 @@ const insertAddressBookMockData = async () => {
       -- 메모 아이템 데이터
       INSERT INTO note_item (group_id, title, content) VALUES
         (1, '생일', '3월 15일'),
-        (1, '좋아하는 음식', '치킨, 피자'),
+        (2, '좋아하는 음식', '치킨, 피자'),
         (2, '취미', '독서, 영화감상'),
         (2, '싫어하는 것', '매운 음식'),
         (3, '담당 업무', '소셜미디어 마케팅'),
