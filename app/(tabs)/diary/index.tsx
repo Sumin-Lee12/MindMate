@@ -137,42 +137,44 @@ const DiaryListPage = () => {
   return (
     <View className="flex-1 bg-turquoise">
       <ScrollView
-        contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 96 }}
+        className="flex-1"
+        contentContainerStyle={{ 
+          paddingHorizontal: 12, 
+          paddingTop: 12, 
+          paddingBottom: 80 
+        }}
+        contentContainerClassName="sm:px-4 sm:pt-4 sm:pb-24 lg:px-6 lg:pt-6"
       >
         {/* 기능 버튼들 */}
         <View className="mb-4">
-          <View className="flex-row" style={{ gap: 8 }}>
+          <View className="flex-row gap-1 sm:gap-2">
             <Pressable
               onPress={() => router.push('/diary/trash')}
-              className="flex-row items-center justify-center gap-1 rounded-lg bg-white px-2 py-2.5 shadow-sm"
-              style={{ flex: 1, minHeight: 40 }}
+              className="flex-1 flex-row items-center justify-center gap-1 rounded-lg bg-white px-1 sm:px-2 py-2 sm:py-2.5 shadow-sm min-h-[40px] sm:min-h-[44px]"
             >
-              <Trash2 color={'#576bcd'} size={16} />
-              <Text className="text-sm font-medium text-paleCobalt">휴지통</Text>
+              <Trash2 color={'#576bcd'} size={14} className="sm:w-4 sm:h-4" />
+              <Text className="text-xs sm:text-sm font-medium text-paleCobalt">휴지통</Text>
             </Pressable>
             <Pressable
               onPress={() => router.push('/diary/stats')}
-              className="flex-row items-center justify-center gap-1 rounded-lg bg-white px-2 py-2.5 shadow-sm"
-              style={{ flex: 1, minHeight: 40 }}
+              className="flex-1 flex-row items-center justify-center gap-1 rounded-lg bg-white px-1 sm:px-2 py-2 sm:py-2.5 shadow-sm min-h-[40px] sm:min-h-[44px]"
             >
-              <BarChart3 color={'#576bcd'} size={16} />
-              <Text className="text-sm font-medium text-paleCobalt">통계</Text>
+              <BarChart3 color={'#576bcd'} size={14} className="sm:w-4 sm:h-4" />
+              <Text className="text-xs sm:text-sm font-medium text-paleCobalt">통계</Text>
             </Pressable>
             <Pressable
               onPress={() => router.push('/diary/favorites')}
-              className="flex-row items-center justify-center gap-1 rounded-lg bg-white px-2 py-2.5 shadow-sm"
-              style={{ flex: 1, minHeight: 40 }}
+              className="flex-1 flex-row items-center justify-center gap-1 rounded-lg bg-white px-1 sm:px-2 py-2 sm:py-2.5 shadow-sm min-h-[40px] sm:min-h-[44px]"
             >
-              <Star color={'#FFD700'} size={16} fill={'#FFD700'} />
-              <Text className="text-sm font-medium text-paleCobalt">북마크</Text>
+              <Star color={'#FFD700'} size={14} fill={'#FFD700'} className="sm:w-4 sm:h-4" />
+              <Text className="text-xs sm:text-sm font-medium text-paleCobalt">북마크</Text>
             </Pressable>
             <Pressable
               onPress={() => setShowSearchModal(true)}
-              className="flex-row items-center justify-center gap-1 rounded-lg bg-white px-2 py-2.5 shadow-sm"
-              style={{ flex: 1, minHeight: 40 }}
+              className="flex-1 flex-row items-center justify-center gap-1 rounded-lg bg-white px-1 sm:px-2 py-2 sm:py-2.5 shadow-sm min-h-[40px] sm:min-h-[44px]"
             >
-              <Search color={'#576bcd'} size={16} />
-              <Text className="text-sm font-medium text-paleCobalt">검색</Text>
+              <Search color={'#576bcd'} size={14} className="sm:w-4 sm:h-4" />
+              <Text className="text-xs sm:text-sm font-medium text-paleCobalt">검색</Text>
             </Pressable>
           </View>
           {isSearchActive && (
@@ -338,9 +340,9 @@ const DiaryListPage = () => {
       {/* + 버튼 */}
       <Pressable
         onPress={() => router.push('/diary/create')}
-        className="absolute bottom-16 right-6 h-16 w-16 items-center justify-center rounded-full bg-paleCobalt shadow-md"
+        className="absolute bottom-20 sm:bottom-24 right-8 sm:right-12 w-16 h-16 sm:w-20 sm:h-20 items-center justify-center rounded-full bg-paleCobalt shadow-lg"
       >
-        <AntDesign name="plus" size={36} color="white" />
+        <AntDesign name="plus" size={32} color="white" className="sm:text-5xl" />
       </Pressable>
 
       {/* 검색 모달 */}

@@ -8,44 +8,16 @@ export default function CustomTopTabBar({
   navigation,
 }: MaterialTopTabBarProps) {
   return (
-    <View
-      style={{
-        backgroundColor: '#f0f3ff',
-        paddingTop: 20,
-      }}
-    >
+    <View className="bg-blue-50 pt-safe">
       {/* MIND MATE 타이틀 */}
-      <View
-        style={{
-          alignItems: 'center',
-          paddingVertical: 12,
-        }}
-      >
-        <Text
-          style={{
-            fontSize: 18,
-            fontWeight: 'bold',
-            color: '#5b67ca',
-          }}
-        >
+      <View className="items-center py-3 sm:py-4">
+        <Text className="text-lg sm:text-xl lg:text-2xl font-bold text-blue-600">
           MIND MATE
         </Text>
       </View>
 
-      <View
-        style={{
-          flexDirection: 'row',
-          paddingHorizontal: 12,
-          paddingVertical: 8,
-          borderTopWidth: 1,
-          borderBottomWidth: 1,
-          borderTopColor: '##576BCD',
-          borderBottomColor: '##576BCD',
-          alignItems: 'center',
-          justifyContent: 'center',
-          backgroundColor: '#f0f3ff',
-        }}
-      >
+      <View className="flex-row px-2 sm:px-3 py-2 border-t border-b border-blue-600 items-center justify-center bg-blue-50">
+      
         {state.routes.map((route, index) => {
           const { options } = descriptors[route.key];
           const label =
@@ -70,23 +42,16 @@ export default function CustomTopTabBar({
             <TouchableOpacity
               key={route.key}
               onPress={onPress}
-              style={{
-                flex: 1,
-                marginHorizontal: 4,
-                paddingVertical: 12,
-                paddingHorizontal: 12,
-                backgroundColor: isFocused ? '#5b67ca' : 'transparent',
-                borderRadius: 12,
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
+              className={`flex-1 mx-1 sm:mx-2 py-2 sm:py-3 px-2 sm:px-3 rounded-lg items-center justify-center ${
+                isFocused ? 'bg-blue-600' : 'bg-transparent'
+              }`}
             >
               <Text
-                style={{
-                  fontSize: 14,
-                  fontWeight: isFocused ? 'bold' : 'normal',
-                  color: isFocused ? '#ffffff' : '#576BCD',
-                }}
+                className={`text-xs sm:text-sm ${
+                  isFocused 
+                    ? 'font-bold text-white' 
+                    : 'font-normal text-blue-600'
+                }`}
               >
                 {label}
               </Text>
