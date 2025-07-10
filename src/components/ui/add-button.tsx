@@ -16,7 +16,7 @@ const AddButton = ({ onPress, className }: AddButtonProps) => {
   return (
     <TouchableOpacity
       onPress={onPress}
-      className={`absolute bottom-8 right-6 h-16 w-16 items-center justify-center rounded-full bg-paleCobalt shadow-lg ${className}`}
+      className={`absolute bottom-12 right-6 h-16 w-16 items-center justify-center rounded-full bg-paleCobalt shadow-lg ${className}`}
       activeOpacity={0.8}
     >
       <Text className="text-4xl font-semibold text-white">+</Text>
