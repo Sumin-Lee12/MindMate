@@ -11,6 +11,7 @@ import {
   RoutineWithSubTasksType,
   RoutineQueryOptions,
 } from './db/routine-db-types';
+import { shouldRunOnDate } from './utils';
 
 /**
  * DB 타입을 앱 타입으로 변환하는 헬퍼 함수
@@ -77,10 +78,10 @@ export const fetchGetRoutines = async (
     const params: any[] = [];
     const conditions: string[] = [];
 
-    // 날짜 필터링 (해당 날짜 이후 생성된 루틴만)
+    // 날짜 필터링 (해당 날짜 이전에 생성된 루틴만 - 반복 설정에 따라 해당 날짜에 실행될 수 있음)
     if (options.date) {
-      conditions.push('r.created_at >= ?');
-      params.push(`${options.date} 00:00:00`);
+      conditions.push('r.created_at <= ?');
+      params.push(`${options.date} 23:59:59`);
     }
 
     if (conditions.length > 0) {
@@ -135,8 +136,8 @@ export const fetchGetRoutines = async (
       }
     });
 
-    // DB 타입을 앱 타입으로 변환하여 반환
-    return Array.from(routineMap.values()).map((routine) => {
+    // DB 타입을 앱 타입으로 변환
+    const allRoutines = Array.from(routineMap.values()).map((routine) => {
       const routineData: RoutineDbType = {
         id: routine.id,
         name: routine.name,
@@ -150,6 +151,19 @@ export const fetchGetRoutines = async (
       };
       return mapDbToRoutineType(routineData, routine.subTasks);
     });
+
+    // 특정 날짜에 실행되어야 하는 루틴만 필터링
+    if (options.date) {
+      // YYYY-MM-DD 형식을 로컬 시간대로 정확히 파싱
+      const [year, month, day] = options.date.split('-').map(Number);
+      const targetDate = new Date(year, month - 1, day); // month는 0-based
+
+      return allRoutines.filter((routine) => {
+        return shouldRunOnDate(routine, targetDate);
+      });
+    }
+
+    return allRoutines;
   } catch (error) {
     console.error('Error fetching routines:', error);
     throw new Error('루틴 목록을 가져오는데 실패했습니다.');
@@ -191,7 +205,20 @@ export const fetchCreateRoutine = async (payload: CreateRoutinePayload): Promise
   try {
     await db.runAsync('BEGIN TRANSACTION');
 
-    const now = new Date().toISOString();
+    // 시작 날짜가 있으면 해당 날짜를, 없으면 현재 시간을 사용
+    const startDate = payload.startDate
+      ? (() => {
+          const [year, month, day] = payload.startDate.split('-').map(Number);
+          const parsedDate = new Date(year, month - 1, day);
+          // 로컬 시간대로 저장 (UTC가 아닌)
+          return parsedDate.toISOString().split('T')[0] + 'T00:00:00.000Z';
+        })()
+      : (() => {
+          const now = new Date();
+          const localDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+          // 로컬 시간대로 저장 (UTC가 아닌)
+          return localDate.toISOString().split('T')[0] + 'T00:00:00.000Z';
+        })();
     const routineData = mapToCreateRoutineDbType(payload);
 
     // 루틴 기본 정보 삽입
@@ -207,8 +234,8 @@ export const fetchCreateRoutine = async (payload: CreateRoutinePayload): Promise
       routineData.repeat_cycle,
       routineData.alarm_time,
       routineData.deadline,
-      now,
-      now,
+      startDate,
+      startDate,
     ]);
 
     const routineId = routineResult.lastInsertRowId;
@@ -226,8 +253,8 @@ export const fetchCreateRoutine = async (payload: CreateRoutinePayload): Promise
           subTask.title,
           subTask.order,
           0, // is_completed = false (미완료 상태로 시작)
-          now,
-          now,
+          startDate,
+          startDate,
         ]);
       }
     }

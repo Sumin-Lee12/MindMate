@@ -85,19 +85,32 @@ export const formatRepeatCycle = (detail: RepeatCycleDetail): RepeatCycleType =>
 
 /**
  * 특정 날짜에 루틴이 실행되어야 하는지 확인하는 함수
- * @param routine - 루틴 정보
+ * @param routine - 루틴 정보 (생성 날짜 포함)
  * @param targetDate - 확인할 날짜 (Date 객체)
  * @returns 해당 날짜에 루틴이 실행되어야 하면 true
  */
 export const shouldRunOnDate = (
-  routine: { repeatCycle: RepeatCycleType },
+  routine: { repeatCycle: RepeatCycleType; createdAt: string },
   targetDate: Date,
 ): boolean => {
   const detail = parseRepeatCycle(routine.repeatCycle);
   if (!detail) return false;
 
-  const today = new Date();
-  const target = new Date(targetDate);
+  // 날짜를 YYYY-MM-DD 형식으로 정규화 (시간 정보 제거)
+  const target = new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate());
+
+  // 생성 날짜를 로컬 시간대로 정확히 파싱
+  const createdDate = new Date(routine.createdAt);
+  const created = new Date(
+    createdDate.getFullYear(),
+    createdDate.getMonth(),
+    createdDate.getDate(),
+  );
+
+  // 루틴 생성 날짜보다 이전 날짜는 false 반환
+  if (target < created) {
+    return false;
+  }
 
   switch (detail.type) {
     case 'daily':
@@ -105,18 +118,57 @@ export const shouldRunOnDate = (
 
     case 'interval':
       if (!detail.value.interval) return false;
-      const daysDiff = Math.floor((target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+      const daysDiff = Math.floor((target.getTime() - created.getTime()) / (1000 * 60 * 60 * 24));
       return daysDiff % detail.value.interval === 0;
 
     case 'weekly':
       if (!detail.value.weekday) return false;
       const weekdays = ['일', '월', '화', '수', '목', '금', '토'];
       const targetWeekday = weekdays[target.getDay()];
-      return targetWeekday === detail.value.weekday;
+
+      // 요일이 일치하는지 확인
+      if (targetWeekday !== detail.value.weekday) {
+        return false;
+      }
+
+      // 루틴 생성 날짜 이후의 해당 요일인지 확인
+      const createdWeekday = weekdays[created.getDay()];
+      if (createdWeekday === detail.value.weekday) {
+        return target >= created;
+      } else {
+        const createdWeekdayIndex = weekdays.indexOf(createdWeekday);
+        const targetWeekdayIndex = weekdays.indexOf(detail.value.weekday);
+        const daysToNextWeekday = (targetWeekdayIndex - createdWeekdayIndex + 7) % 7;
+        const firstRunDate = new Date(created);
+        firstRunDate.setDate(created.getDate() + daysToNextWeekday);
+        return target >= firstRunDate;
+      }
 
     case 'monthly':
       if (!detail.value.day) return false;
-      return target.getDate() === detail.value.day;
+
+      // 날짜가 일치하는지 확인
+      if (target.getDate() !== detail.value.day) {
+        return false;
+      }
+
+      // 루틴 생성 날짜 이후의 해당 날짜인지 확인
+      const createdMonth = created.getFullYear() * 12 + created.getMonth();
+      const targetMonth = target.getFullYear() * 12 + target.getMonth();
+
+      // 다른 월인 경우: targetMonth >= createdMonth
+      if (targetMonth > createdMonth) {
+        return true;
+      }
+
+      // 같은 월인 경우: 생성 날짜보다 이후이면서 설정된 날짜와 일치해야 함
+      if (targetMonth === createdMonth) {
+        const isAfterCreated = target.getDate() >= created.getDate();
+        const isTargetDay = target.getDate() === detail.value.day;
+        return isAfterCreated && isTargetDay;
+      }
+
+      return false;
 
     case 'monthlyWeek':
       if (!detail.value.weekOrder || !detail.value.weekday) return false;

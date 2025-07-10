@@ -129,114 +129,71 @@ const RoutineForm = () => {
   const totalCount = subTaskChecks.length;
 
   return (
-    <View className="flex-1 bg-turquoise">
-      {/* 헤더 */}
-      <View className="flex-row items-center justify-between bg-white px-4 py-3 shadow-sm">
-        <TouchableOpacity onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={24} color="#576BCD" />
-        </TouchableOpacity>
-        <Text className="text-lg font-bold text-black">루틴 상세</Text>
-        <TouchableOpacity onPress={() => router.push(`/routine/routineform?id=${routine.id}`)}>
-          <Ionicons name="create-outline" size={24} color="#576BCD" />
-        </TouchableOpacity>
-      </View>
-
-      <ScrollView className="flex-1 px-4 py-4">
-        {/* 루틴 기본 정보 */}
-        <View className="mb-6 rounded-xl bg-white p-4 shadow-sm">
-          <View className="mb-4 flex-row items-start justify-between">
+    <View className="flex-1 bg-[#F4F4F4]">
+      {/* 상단 여백 */}
+      <View style={{ height: 32 }} />
+      <ScrollView
+        className="flex-1"
+        contentContainerStyle={{ alignItems: 'center', paddingBottom: 32 }}
+      >
+        {/* 카드 */}
+        <View className="w-[92%] rounded-2xl bg-white px-6 py-6 shadow-lg">
+          {/* 제목/이미지 */}
+          <View className="mb-2 flex-row items-start justify-between">
             <View className="flex-1">
-              <Text className="mb-2 text-xl font-bold text-black">{routine.name}</Text>
-              <Text className="text-sm text-gray">{routine.details || '설명이 없습니다.'}</Text>
+              <Text className="mb-1 text-[22px] font-extrabold text-[#222]">{routine.name}</Text>
+              <View className="mb-2 h-2 w-16 rounded-full bg-[#F7E6C4]" />
+              <Text className="mb-1 text-[14px] text-[#7B7FD6]">
+                {routine.createdAt && routine.deadline
+                  ? `${routine.createdAt.slice(0, 10)} ~ ${routine.deadline}`
+                  : ''}
+              </Text>
+              <Text className="mb-1 text-[14px] text-[#7B7FD6]">{routine.repeatCycle} 30분</Text>
             </View>
             {routine.imageUrl && (
               <Image
                 source={{ uri: routine.imageUrl }}
-                className="ml-4 h-16 w-16 rounded-lg"
+                className="ml-4 h-24 w-24 rounded-lg"
                 resizeMode="cover"
               />
             )}
           </View>
 
-          {/* 루틴 정보 라벨들 */}
-          <View className="flex-row flex-wrap gap-2">
-            {routine.deadline && <Label>{formatDate(routine.deadline)}</Label>}
-            <Label>{routine.repeatCycle}</Label>
-            {routine.alarmTime && <Label>{formatTime(routine.alarmTime)}</Label>}
-            <Label>{routine.subTasks.length}개 작업</Label>
-          </View>
-        </View>
-
-        {/* 하위 작업 섹션 */}
-        <View className="mb-6">
-          <View className="mb-3 flex-row items-center justify-between">
-            <Text className="text-lg font-bold text-black">하위 작업</Text>
-            <View className="flex-row items-center gap-2">
-              <Text className="text-sm text-gray">
-                {completedCount}/{totalCount}
-              </Text>
-              <View className="h-2 w-16 rounded-full bg-foggyBlue">
-                <View
-                  className="h-2 rounded-full bg-paleCobalt"
-                  style={{
-                    width: totalCount > 0 ? `${(completedCount / totalCount) * 100}%` : '0%',
-                  }}
-                />
-              </View>
-            </View>
+          {/* 상세 */}
+          <Text className="mb-1 mt-2 text-[15px] font-bold text-[#7B7FD6]">상세</Text>
+          <View className="mb-3 rounded-xl bg-[#F7F8FD] px-4 py-3 shadow-sm">
+            <Text className="text-[15px] text-[#222]">{routine.details || '설명이 없습니다.'}</Text>
           </View>
 
-          {/* 하위 작업 리스트 */}
-          <View className="space-y-2">
+          {/* 알림 */}
+          <View className="mb-4 flex-row items-center rounded-xl bg-[#F7F8FD] px-4 py-3 shadow-sm">
+            <Ionicons name="alarm-outline" size={20} color="#FF4848" style={{ marginRight: 8 }} />
+            <Text className="mr-4 text-[16px] text-[#222]">
+              {routine.alarmTime ? routine.alarmTime.replace(':', ' : ') : '-- : --'}
+            </Text>
+            <Ionicons name="toggle" size={22} color="#B0B8CC" />
+          </View>
+
+          {/* 하위 작업 */}
+          <Text className="mb-2 text-[15px] font-bold text-[#7B7FD6]">하위 작업</Text>
+          <View className="gap-2">
             {routine.subTasks.map((task, index) => (
-              <SubRoutineTaskCheckCard
-                key={task.id}
-                label={task.title}
-                checked={subTaskChecks[index]}
-                onToggle={(checked) => handleSubTaskToggle(index, checked)}
-              />
+              <View key={task.id} className="mb-2 flex-row items-center">
+                <View className="flex-1 flex-row items-center justify-between rounded-xl bg-[#7B7FD6] px-4 py-3">
+                  <Text className="text-[16px] font-bold text-white">{task.title}</Text>
+                  <TouchableOpacity
+                    onPress={() => handleSubTaskToggle(index, !subTaskChecks[index])}
+                  >
+                    <Ionicons
+                      name={subTaskChecks[index] ? 'checkbox' : 'square-outline'}
+                      size={22}
+                      color={subTaskChecks[index] ? '#576BCD' : '#B0B8CC'}
+                    />
+                  </TouchableOpacity>
+                </View>
+              </View>
             ))}
           </View>
-        </View>
-
-        {/* 루틴 완료 버튼 */}
-        <View className="mb-6">
-          <TouchableOpacity
-            onPress={handleCompleteRoutine}
-            className={`rounded-xl py-4 ${allTasksCompleted ? 'bg-paleCobalt' : 'bg-foggyBlue'}`}
-            disabled={!allTasksCompleted}
-          >
-            <Text
-              className={`text-center font-bold ${allTasksCompleted ? 'text-white' : 'text-gray'}`}
-            >
-              {allTasksCompleted ? '루틴 완료!' : '모든 하위 작업을 완료해주세요'}
-            </Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* 추가 액션 버튼들 */}
-        <View className="mb-6 space-y-3">
-          <TouchableOpacity
-            onPress={() => {
-              /* TODO: 루틴 공유 */
-              Alert.alert('공유', '루틴 공유 기능은 준비 중입니다.');
-            }}
-            className="flex-row items-center justify-center rounded-xl bg-white py-3 shadow-sm"
-          >
-            <Ionicons name="share-outline" size={20} color="#576BCD" />
-            <Text className="ml-2 font-medium text-paleCobalt">루틴 공유</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            onPress={() => {
-              /* TODO: 루틴 통계 보기 */
-              Alert.alert('통계', '루틴 통계 기능은 준비 중입니다.');
-            }}
-            className="flex-row items-center justify-center rounded-xl bg-white py-3 shadow-sm"
-          >
-            <Ionicons name="analytics-outline" size={20} color="#576BCD" />
-            <Text className="ml-2 font-medium text-paleCobalt">통계 보기</Text>
-          </TouchableOpacity>
         </View>
       </ScrollView>
     </View>

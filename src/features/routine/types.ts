@@ -4,6 +4,7 @@
 
 // 반복 주기 타입
 export type RepeatCycleType =
+  | '없음'
   | '매일'
   | `${number}일마다`
   | `매주 ${WeekdayType}`
@@ -59,6 +60,7 @@ export type CreateRoutinePayload = {
   repeatCycle: RepeatCycleType;
   alarmTime?: string;
   deadline?: string;
+  startDate?: string; // 루틴 시작 날짜 (YYYY-MM-DD 형식)
   subTasks: Omit<SubTaskType, 'id' | 'routineId' | 'isCompleted'>[];
 };
 

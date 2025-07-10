@@ -21,17 +21,18 @@ const RoutineMain = () => {
 
   // 루틴 생성 페이지로 이동
   const handleCreateRoutine = () => {
-    router.push('/routine/routineform');
+    const selectedDateStr = selectedDate.toISOString().split('T')[0]; // YYYY-MM-DD 형식
+    router.push(`/routine/new?startDate=${selectedDateStr}`);
   };
 
   // 루틴 수정 페이지로 이동
   const handleEditRoutine = (id: string) => {
-    router.push(`/routine/routineform?id=${id}`);
+    router.push(`/routine/${id}`);
   };
 
   // 루틴 상세 페이지로 이동
   const handleViewRoutine = (id: string) => {
-    router.push(`/routine/${id}`);
+    router.push(`/routine/routineform?id=${id}`);
   };
 
   // 루틴 삭제
