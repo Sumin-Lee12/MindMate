@@ -574,18 +574,18 @@ export class DiaryService {
   }
 
   /**
-   * 일기 즐겨찾기 상태를 토글합니다
+   * 일기 북마크 상태를 토글합니다
    *
    * is_favorite 컬럼의 값을 0과 1 사이에서 토글합니다.
    *
    * @param id - 일기 ID
-   * @returns Promise<boolean> 변경된 즐겨찾기 상태 (true: 즐겨찾기, false: 일반)
+   * @returns Promise<boolean> 변경된 북마크 상태 (true: 북마크, false: 일반)
    * @throws {Error} 데이터베이스 업데이트 실패 시
    *
    * @example
    * ```typescript
    * const isFavorite = await DiaryService.toggleFavorite(123);
-   * console.log(`일기가 ${isFavorite ? '즐겨찾기에 추가' : '즐겨찾기에서 제거'}되었습니다`);
+   * console.log(`일기가 ${isFavorite ? '북마크에 추가' : '북마크에서 제거'}되었습니다`);
    * ```
    */
   static async toggleFavorite(id: number): Promise<boolean> {
@@ -606,24 +606,24 @@ export class DiaryService {
 
       return newFavoriteState === 1;
     } catch (error) {
-      console.error('즐겨찾기 토글 실패:', error);
+      console.error('북마크 토글 실패:', error);
       throw error;
     }
   }
 
   /**
-   * 즐겨찾기 일기 목록을 조회합니다
+   * 북마크 일기 목록을 조회합니다
    *
    * is_favorite이 1인 일기들을 최신순으로 반환합니다.
    * 삭제된 일기는 제외됩니다.
    *
-   * @returns Promise<DiaryTableType[]> 즐겨찾기 일기 목록
+   * @returns Promise<DiaryTableType[]> 북마크 일기 목록
    * @throws {Error} 데이터베이스 조회 실패 시
    *
    * @example
    * ```typescript
    * const favoriteDiaries = await DiaryService.getFavoriteDiaries();
-   * console.log(`${favoriteDiaries.length}개의 즐겨찾기 일기가 있습니다`);
+   * console.log(`${favoriteDiaries.length}개의 북마크 일기가 있습니다`);
    * ```
    */
   static async getFavoriteDiaries(): Promise<DiaryTableType[]> {
@@ -633,7 +633,7 @@ export class DiaryService {
       );
       return result || [];
     } catch (error) {
-      console.error('즐겨찾기 일기 조회 실패:', error);
+      console.error('북마크 일기 조회 실패:', error);
       throw error;
     }
   }

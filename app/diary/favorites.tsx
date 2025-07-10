@@ -10,16 +10,16 @@ import { groupDiariesByPeriod } from '../../src/features/diary/utils/diary-group
 import { Colors } from '../../src/constants/colors';
 
 /**
- * 즐겨찾기 페이지 컴포넌트
+ * 북마크 페이지 컴포넌트
  *
- * 사용자가 즐겨찾기로 표시한 일기들을 보여주는 페이지입니다.
+ * 사용자가 북마크로 표시한 일기들을 보여주는 페이지입니다.
  * 현재 데이터베이스 스키마에 is_favorite 컬럼이 없어 비활성화 상태입니다.
  *
  * 주요 기능:
- * - 즐겨찾기 일기 목록 표시
+ * - 북마크 일기 목록 표시
  * - 날짜별 그룹화
  * - 빈 상태 안내 메시지
- * - 즐겨찾기 개수 표시
+ * - 북마크 개수 표시
  *
  * @component
  * @todo 데이터베이스 스키마에 is_favorite 컬럼 추가 후 기능 활성화
@@ -42,11 +42,11 @@ const FavoritesPage = () => {
     try {
       setLoading(true);
       const result = await DiaryService.getAllDiariesWithMedia();
-      // 즐겨찾기만 필터링
+      // 북마크만 필터링
       const favorites = result.filter(diary => diary.is_favorite);
       setFavoriteDiaries(favorites);
     } catch (error) {
-      console.error('즐겨찾기 일기 조회 실패:', error);
+      console.error('북마크 일기 조회 실패:', error);
     } finally {
       setLoading(false);
     }
@@ -77,7 +77,7 @@ const FavoritesPage = () => {
         <TouchableOpacity onPress={handleBack}>
           <ChevronLeft size={24} color={Colors.paleCobalt} />
         </TouchableOpacity>
-        <Text className="text-lg font-bold text-paleCobalt">즐겨찾기</Text>
+        <Text className="text-lg font-bold text-paleCobalt">북마크</Text>
         <View style={{ width: 24 }} />
       </View>
 
@@ -88,19 +88,19 @@ const FavoritesPage = () => {
           {loading ? (
             <View className="flex-1 items-center justify-center" style={{ marginTop: 100 }}>
               <ActivityIndicator size="large" color="#576bcd" />
-              <Text className="mt-4 text-center text-base text-paleCobalt">즐겨찾기를 불러오는 중...</Text>
+              <Text className="mt-4 text-center text-base text-paleCobalt">북마크를 불러오는 중...</Text>
             </View>
           ) : favoriteDiaries.length === 0 ? (
             <View className="flex-1 items-center justify-center" style={{ marginTop: 100 }}>
               <Star size={64} color={Colors.gray} />
-              <Text className="mt-4 text-lg text-gray">즐겨찾기가 비어있습니다</Text>
+              <Text className="mt-4 text-lg text-gray">북마크가 비어있습니다</Text>
               <Text className="mt-2 text-sm text-gray">
-                중요한 일기에 ⭐ 버튼을 눌러 즐겨찾기에 추가하세요
+                중요한 일기에 ⭐ 버튼을 눌러 북마크에 추가하세요
               </Text>
             </View>
           ) : (
             <>
-              {/* 즐겨찾기 개수 */}
+              {/* 북마크 개수 */}
               <View className="mb-4 flex-row items-center gap-2">
                 <Heart size={20} color={Colors.paleCobalt} />
                 <Text className="text-sm font-bold text-paleCobalt">
