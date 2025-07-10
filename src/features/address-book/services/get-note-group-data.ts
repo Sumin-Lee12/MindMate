@@ -30,3 +30,17 @@ export const getNoteItemsByGroupId = async (groupId: string): Promise<NoteItem[]
     throw error;
   }
 };
+
+// 특정 노트 아이템 하나 조회
+export const getNoteItemById = async (itemId: string): Promise<NoteItem | null> => {
+  try {
+    const result = await db.getFirstAsync<NoteItem>('SELECT * FROM note_item WHERE item_id = ?', [
+      itemId,
+    ]);
+
+    return result || null;
+  } catch (error) {
+    console.error('❌ 노트 아이템 조회 실패:', error);
+    throw error;
+  }
+};
