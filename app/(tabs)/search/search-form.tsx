@@ -20,12 +20,13 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SearchFormSchema, searchFormSchema } from '@/src/features/search/utils/search-form-schema';
 import ImageButton from '@/src/components/ui/image-button';
 import { MediaType } from '@/src/types/common-db-types';
-import { insertMedia, pickMedia } from '@/src/lib/media-services';
+import {  fetchInsertMedia, pickMedia } from '@/src/lib/media-services';
 import {
   fetchGetMediaById,
   fetchGetSearchById,
+  fetchInsertSearch,
   fetchUpdateSearchById,
-  insertSearch,
+  
 } from '@/src/features/search/search-services';
 import Toast from 'react-native-toast-message';
 
@@ -86,9 +87,9 @@ const SearchForm = () => {
   const handleFormSubmit = async (data: SearchFormSchema) => {
     try {
       await db.withTransactionAsync(async () => {
-        const lastInsertRowId = await insertSearch(data);
+        const lastInsertRowId = await fetchInsertSearch(data);
         if (images.length > 0) {
-          await insertMedia(images, 'search', lastInsertRowId);
+          await fetchInsertMedia(images, 'search', lastInsertRowId);
         }
       });
       router.back();

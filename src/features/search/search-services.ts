@@ -4,7 +4,7 @@ import { SearchData } from './db/search-db-types';
 import { MediaFullType } from '@/src/lib/db/share-db-types';
 import { MediaType } from '@/src/types/common-db-types';
 
-export const insertSearch = async (data: SearchFormSchema) => {
+export const fetchInsertSearch = async (data: SearchFormSchema) => {
   const { lastInsertRowId } = await db.runAsync(
     `
           INSERT INTO search (name, category, location, description)
