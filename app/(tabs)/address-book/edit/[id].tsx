@@ -1,10 +1,10 @@
 import { useLocalSearchParams } from 'expo-router';
 import FormEditContact from '@/src/features/address-book/components/form-edit-contact';
-import Button from '@/src/components/ui/button';
-import { Text, View } from 'react-native';
+import { Text, TouchableOpacity, View } from 'react-native';
 import { useState } from 'react';
 import AddContactDetailGroupModal from '@/src/features/address-book/components/add-contact-detail-group-modal';
 import ContactDetailGroupSectionList from '@/src/features/address-book/components/contact-detail-group-section-list';
+import { CircleCheckBig } from 'lucide-react-native';
 
 const Edit = () => {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -13,9 +13,10 @@ const Edit = () => {
   return (
     <>
       <FormEditContact id={id} />
-      <AddContactDetailGroupButton onPress={() => setIsModalVisible(true)} />
       <ContactDetailGroupSectionList id={id} isModalVisible={isModalVisible} />
-      <View className="h-20" />
+      <View className="h-20 items-center justify-start">
+        <AddContactDetailGroupButton onPress={() => setIsModalVisible(true)} />
+      </View>
       {isModalVisible && (
         <AddContactDetailGroupModal
           isModalVisible={isModalVisible}
@@ -31,9 +32,12 @@ const AddContactDetailGroupButton = ({ onPress }: { onPress: () => void }) => {
   return (
     <>
       <View className="w-20">
-        <Button className=" bg-paleCobalt p-2" onPress={onPress}>
-          <Text>목록추가</Text>
-        </Button>
+        <TouchableOpacity className="flex-row items-center justify-center gap-2" onPress={onPress}>
+          <View className="items-center gap-2">
+            <CircleCheckBig size={24} color="#576BCD" />
+            <Text className="text-ss font-normal text-paleCobalt">목록추가</Text>
+          </View>
+        </TouchableOpacity>
       </View>
     </>
   );
