@@ -2,7 +2,7 @@ import { useLocalSearchParams } from 'expo-router';
 import FormEditContact from '@/src/features/address-book/components/form-edit-contact';
 import { Text, TouchableOpacity, View } from 'react-native';
 import { useState } from 'react';
-import AddContactDetailGroupModal from '@/src/features/address-book/components/add-contact-detail-group-modal';
+import EditContactDetailGroupModal from '@/src/features/address-book/components/edit-contact-detail-group-modal';
 import ContactDetailGroupSectionList from '@/src/features/address-book/components/contact-detail-group-section-list';
 import { CircleCheckBig } from 'lucide-react-native';
 
@@ -18,7 +18,7 @@ const Edit = () => {
         <AddContactDetailGroupButton onPress={() => setIsModalVisible(true)} />
       </View>
       {isModalVisible && (
-        <AddContactDetailGroupModal
+        <EditContactDetailGroupModal
           isModalVisible={isModalVisible}
           setIsModalVisible={setIsModalVisible}
           id={id}
