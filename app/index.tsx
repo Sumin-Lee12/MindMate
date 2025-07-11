@@ -2,7 +2,6 @@ import { Text, View, TouchableOpacity, Image } from 'react-native';
 import { router } from 'expo-router';
 import { BookOpen, Clock, Search, RefreshCcw, UserRound } from 'lucide-react-native';
 import { Colors } from '../src/constants/colors';
-import DevDbShareButton from '../src/lib/db/dev-db-share-button';
 
 export default function HomeScreen() {
   const menuItems = [
