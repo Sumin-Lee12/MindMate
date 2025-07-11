@@ -6,9 +6,10 @@ type SearchInputType = {
   value: string;
   onChange: Dispatch<SetStateAction<string>>;
   onSubmitEditing?: () => void;
+  placeholder?: string;
 };
 
-const SearchInput = ({ value, onChange, onSubmitEditing }: SearchInputType) => {
+const SearchInput = ({ value, onChange, onSubmitEditing, placeholder }: SearchInputType) => {
   return (
     <View className="w-full flex-row items-center rounded-full bg-white px-4 shadow-dropShadow">
       <TextInput
@@ -17,6 +18,7 @@ const SearchInput = ({ value, onChange, onSubmitEditing }: SearchInputType) => {
         onChangeText={onChange}
         returnKeyType="search"
         onSubmitEditing={onSubmitEditing}
+        placeholder={placeholder}
       />
       <TouchableOpacity onPress={onSubmitEditing}>
         <Search />
