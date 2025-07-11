@@ -8,15 +8,22 @@ import { addDays, getWeekStart, isSameDay } from '@/src/utils/date';
  * 1주 단위 가로 달력 컴포넌트
  * @param selectedDate - 선택된 날짜
  * @param onChange - 날짜 선택 시 콜백
+ * @param onCalendarIconPress - 달력 아이콘 클릭 시 콜백
  * @param className - 추가적인 스타일 클래스
  */
 type CalendarProps = {
   selectedDate: Date;
   onChange: (date: Date) => void;
+  onCalendarIconPress?: () => void;
   className?: string;
 };
 
-const Calendar = ({ selectedDate, onChange, className = '' }: CalendarProps) => {
+const Calendar = ({
+  selectedDate,
+  onChange,
+  onCalendarIconPress,
+  className = '',
+}: CalendarProps) => {
   const [viewDate, setViewDate] = useState(getWeekStart(selectedDate));
 
   useEffect(() => {
@@ -39,7 +46,9 @@ const Calendar = ({ selectedDate, onChange, className = '' }: CalendarProps) => 
         <View className="flex-1 items-center">
           <Text className="text-lg font-bold">{dateText}</Text>
         </View>
-        <CalendarIcon color="#576BCD" size={28} />
+        <TouchableOpacity onPress={onCalendarIconPress || (() => {})}>
+          <CalendarIcon color="#576BCD" size={28} />
+        </TouchableOpacity>
       </View>
       {/* 요일+날짜 */}
       <View className="flex-row items-center justify-between">

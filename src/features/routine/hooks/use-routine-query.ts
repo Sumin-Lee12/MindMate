@@ -14,6 +14,7 @@ export const useRoutineQuery = (options: RoutineQueryOptions = {}) => {
   const [routines, setRoutines] = useState<RoutineType[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   const fetchRoutines = async () => {
     try {
@@ -30,13 +31,14 @@ export const useRoutineQuery = (options: RoutineQueryOptions = {}) => {
 
   useEffect(() => {
     fetchRoutines();
-  }, [options.date, options.limit, options.offset]);
+  }, [options.date, options.limit, options.offset, refreshKey]);
 
   return {
     routines,
     isLoading,
     error,
     refetch: fetchRoutines,
+    forceRefresh: () => setRefreshKey((prev) => prev + 1),
   };
 };
 

@@ -35,6 +35,14 @@
           "photosPermission": "This app uses the photo library to select images.",
           "cameraPermission": "This app uses the camera to take photos."
         }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/notification-icon.png",
+          "color": "#ffffff",
+          "sounds": ["./assets/notification-sound.wav"]
+        }
       ]
     ],
     "extra": {
