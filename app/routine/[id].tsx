@@ -28,11 +28,22 @@ import {
 } from 'src/features/routine/types';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import type { DateTimePickerProps } from 'react-native-modal-datetime-picker';
+import { useMediaPicker } from 'src/features/diary/hooks/use-media-picker';
+import { useForm } from 'react-hook-form';
 
 const RoutineDetail = () => {
   const { id, startDate } = useLocalSearchParams();
   const router = useRouter();
   const isEdit = id !== 'new';
+
+  // 폼 상태 관리
+  const { setValue, watch } = useForm<{ media: any[] }>({
+    defaultValues: {
+      media: [],
+    },
+  });
+
+  const watchedMedia = watch('media');
 
   // 상태 관리
   const [title, setTitle] = useState('');
@@ -60,6 +71,12 @@ const RoutineDetail = () => {
   const { createRoutine, isLoading: isCreating } = useCreateRoutine();
   const { updateRoutine, isLoading: isUpdating } = useUpdateRoutine();
 
+  // 미디어 선택 훅
+  const { handleImagePicker, uploadState: mediaUploadState } = useMediaPicker(
+    watchedMedia,
+    setValue,
+  );
+
   // 기존 루틴 데이터 로드 (수정 모드)
   useEffect(() => {
     if (routine && isEdit) {
@@ -80,6 +97,18 @@ const RoutineDetail = () => {
     }
   }, [routine, isEdit]);
 
+  // 미디어 변경 시 이미지 URL 업데이트
+  useEffect(() => {
+    if (watchedMedia.length > 0) {
+      const firstImage = watchedMedia.find((media) => media.type === 'image');
+      if (firstImage) {
+        setImageUrl(firstImage.uri);
+      }
+    } else {
+      setImageUrl('');
+    }
+  }, [watchedMedia]);
+
   // 하위 작업 추가
   const addSubTask = () => {
     setSubTasks([...subTasks, '']);
@@ -97,6 +126,12 @@ const RoutineDetail = () => {
     const newSubTasks = [...subTasks];
     newSubTasks[index] = value;
     setSubTasks(newSubTasks);
+  };
+
+  // 이미지 제거
+  const handleRemoveImage = () => {
+    setValue('media', []);
+    setImageUrl('');
   };
 
   // 루틴 저장/수정
@@ -192,49 +227,47 @@ const RoutineDetail = () => {
     );
   }
 
-  const isSaving = isCreating || isUpdating;
+  const isSaving = isCreating || isUpdating || mediaUploadState.isUploading;
 
   return (
     <SafeAreaView className="flex-1 bg-[#F4F4F4]">
       {/* 헤더 */}
       <View className="mt-12 flex-row items-center justify-center rounded-t-xl bg-white px-4 py-4 shadow-sm">
-        <TouchableOpacity onPress={() => router.back()} className="absolute left-4">
-          <Ionicons name="chevron-back" size={28} color="#576BCD" />
+        <TouchableOpacity
+          onPress={() => router.back()}
+          className="absolute left-4"
+          disabled={isSaving}
+        >
+          <Ionicons name="arrow-back" size={24} color="#576BCD" />
         </TouchableOpacity>
-        <Text className="text-xl font-bold text-[#576BCD]">루틴 생성하기</Text>
+        <Text className="text-lg font-bold text-[#576BCD]">
+          {isEdit ? '루틴 수정' : '새 루틴 만들기'}
+        </Text>
       </View>
 
-      <ScrollView
-        className="flex-1"
-        contentContainerStyle={{ alignItems: 'center', paddingVertical: 16 }}
-      >
-        {/* 카드(폼) */}
-        <View className="mb-6 w-[90%] rounded-2xl bg-white px-6 py-8 shadow-lg">
-          {/* 이름 */}
-          <View className="mb-4 flex-row items-center">
-            <Text className="mr-4 w-16 text-base font-bold text-[#7B7FD6]">이름</Text>
-            <TextInput
-              value={title}
-              onChangeText={setTitle}
-              placeholder="루틴 이름 입력"
-              className="flex-1 rounded-xl bg-white px-4 py-3 shadow"
-              placeholderTextColor="#B0B8CC"
-            />
-          </View>
+      <ScrollView className="flex-1 bg-white px-4">
+        <View className="py-4">
+          {/* 제목 */}
+          <Text className="mb-2 text-base font-bold text-[#7B7FD6]">루틴 이름</Text>
+          <TextInput
+            value={title}
+            onChangeText={setTitle}
+            placeholder="루틴 이름을 입력해주세요"
+            className="mb-6 rounded-xl border border-[#E0E4F7] bg-white px-4 py-3 shadow-sm"
+            placeholderTextColor="#B0B8CC"
+          />
 
-          {/* 상세 */}
-          <View className="mb-4 flex-row items-center">
-            <Text className="mr-4 w-16 text-base font-bold text-[#7B7FD6]">상세</Text>
-            <TextInput
-              value={description}
-              onChangeText={setDescription}
-              placeholder="루틴 이름을 입력해주세요"
-              multiline
-              numberOfLines={1}
-              className="flex-1 rounded-xl bg-white px-4 py-3 shadow"
-              placeholderTextColor="#B0B8CC"
-            />
-          </View>
+          {/* 설명 */}
+          <Text className="mb-2 text-base font-bold text-[#7B7FD6]">설명</Text>
+          <TextInput
+            value={description}
+            onChangeText={setDescription}
+            placeholder="루틴에 대한 설명을 입력해주세요 (선택사항)"
+            multiline
+            numberOfLines={3}
+            className="mb-6 rounded-xl border border-[#E0E4F7] bg-white px-4 py-3 shadow-sm"
+            placeholderTextColor="#B0B8CC"
+          />
 
           {/* 하위 작업 */}
           <Text className="mb-2 text-base font-bold text-[#7B7FD6]">하위 작업</Text>
@@ -263,16 +296,41 @@ const RoutineDetail = () => {
 
           {/* 사진 */}
           <Text className="mb-2 text-base font-bold text-[#7B7FD6]">사진</Text>
-          <TouchableOpacity
-            onPress={() => setShowImagePicker(true)}
-            className="mb-6 h-20 w-20 items-center justify-center rounded-xl border-2 border-solid border-[#B0B8CC] bg-white shadow-sm"
-          >
+          <View className="mb-6">
             {imageUrl ? (
-              <Image source={{ uri: imageUrl }} className="h-20 w-20 rounded-lg" />
+              <View className="relative self-start">
+                <Image
+                  source={{ uri: imageUrl }}
+                  className="h-32 w-32 rounded-xl"
+                  resizeMode="cover"
+                />
+                <TouchableOpacity
+                  onPress={handleRemoveImage}
+                  className="absolute right-2 top-2 rounded-full bg-black bg-opacity-50 p-1"
+                >
+                  <Ionicons name="close" size={20} color="white" />
+                </TouchableOpacity>
+              </View>
             ) : (
-              <Ionicons name="add" size={36} color="#7B7FD6" />
+              <TouchableOpacity
+                onPress={handleImagePicker}
+                disabled={mediaUploadState.isUploading}
+                className="bg-gray-50 h-32 w-32 items-center justify-center self-start rounded-xl border-2 border-dashed border-[#B0B8CC]"
+              >
+                {mediaUploadState.isUploading ? (
+                  <View className="items-center">
+                    <ActivityIndicator size="small" color="#576BCD" />
+                    <Text className="text-gray-500 mt-2 text-sm">업로드 중...</Text>
+                  </View>
+                ) : (
+                  <View className="items-center">
+                    <Ionicons name="camera-outline" size={32} color="#7B7FD6" />
+                    <Text className="text-gray-500 mt-2 text-sm">사진 추가하기</Text>
+                  </View>
+                )}
+              </TouchableOpacity>
             )}
-          </TouchableOpacity>
+          </View>
 
           {/* 옵션 영역 */}
           <View className="mb-6 rounded-xl bg-[#F7F8FD] px-4 py-4">
@@ -420,7 +478,9 @@ const RoutineDetail = () => {
               className="flex-1 rounded-xl bg-[#576BCD] py-3"
               disabled={isSaving}
             >
-              <Text className="text-center text-base font-medium text-white">등록하기</Text>
+              <Text className="text-center text-base font-medium text-white">
+                {isSaving ? '처리 중...' : isEdit ? '수정하기' : '등록하기'}
+              </Text>
             </TouchableOpacity>
             <TouchableOpacity
               onPress={() => router.back()}
@@ -448,21 +508,21 @@ const RoutineDetail = () => {
               className="border-gray-200 mb-4 rounded-lg border p-3 text-base"
               placeholderTextColor="#B0B8CC"
             />
-            <View className="flex-row gap-2">
+            <View className="flex-row gap-3">
               <TouchableOpacity
-                className="flex-1 rounded-lg bg-[#576BCD] p-3"
+                onPress={() => setShowRepeatInput(false)}
+                className="bg-gray-200 flex-1 rounded-lg py-3"
+              >
+                <Text className="text-gray-600 text-center text-base font-medium">취소</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
                 onPress={() => {
                   setRepeatInfo(tempRepeatInfo as RepeatCycleType);
                   setShowRepeatInput(false);
                 }}
+                className="flex-1 rounded-lg bg-[#576BCD] py-3"
               >
                 <Text className="text-center text-base font-medium text-white">확인</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                className="bg-gray-200 flex-1 rounded-lg p-3"
-                onPress={() => setShowRepeatInput(false)}
-              >
-                <Text className="text-center text-base text-[#576BCD]">취소</Text>
               </TouchableOpacity>
             </View>
           </View>
