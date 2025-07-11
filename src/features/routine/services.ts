@@ -320,6 +320,10 @@ export const fetchUpdateRoutine = async (payload: UpdateRoutinePayload): Promise
       if (payload.alarmTime !== undefined) {
         updateFields.push('alarm_time = ?');
         updateValues.push(payload.alarmTime);
+      } else {
+        // alarmTime이 undefined인 경우 (알림 비활성화) NULL로 설정
+        updateFields.push('alarm_time = ?');
+        updateValues.push(null);
       }
       if (payload.deadline !== undefined) {
         updateFields.push('deadline = ?');

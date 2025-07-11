@@ -88,13 +88,21 @@ const RoutineDetail = () => {
       setDescription(routine.details || '');
       setSubTasks(routine.subTasks.map((task) => task.title));
       setRepeatInfo(routine.repeatCycle);
+
+      // 반복 설정 상태 업데이트
+      setIsRepeatEnabled(routine.repeatCycle !== '없음');
+
+      // 알람 설정 상태 업데이트
       if (routine.alarmTime) {
         const [hours, minutes] = routine.alarmTime.split(':');
         const date = new Date();
         date.setHours(parseInt(hours), parseInt(minutes));
         setAlarmTime(date);
         setIsAlarmEnabled(true);
+      } else {
+        setIsAlarmEnabled(false);
       }
+
       setImageUrl(routine.imageUrl || '');
       if (routine.deadline) setDeadline(routine.deadline);
       setDuration('00:00');
@@ -234,7 +242,7 @@ const RoutineDetail = () => {
         await setupAlarm(routineData);
 
         Alert.alert('성공', '루틴이 수정되었습니다.', [
-          { text: '확인', onPress: () => router.back() },
+          { text: '확인', onPress: () => router.replace('/(tabs)/routine') },
         ]);
       }
     } else {
@@ -270,7 +278,7 @@ const RoutineDetail = () => {
         await setupAlarm(routineData);
 
         Alert.alert('성공', '루틴이 생성되었습니다.', [
-          { text: '확인', onPress: () => router.back() },
+          { text: '확인', onPress: () => router.replace('/(tabs)/routine') },
         ]);
       }
     }
