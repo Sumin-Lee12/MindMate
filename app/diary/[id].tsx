@@ -105,8 +105,8 @@ const DiaryDetailPage = () => {
       const updatedDiary = await DiaryService.getDiaryById(numericId);
       setDiary(updatedDiary);
     } catch (error) {
-      console.error('즐겨찾기 토글 실패:', error);
-      Alert.alert('오류', '즐겨찾기 설정에 실패했습니다.');
+      console.error('북마크 토글 실패:', error);
+      Alert.alert('오류', '북마크 설정에 실패했습니다.');
     }
   };
 

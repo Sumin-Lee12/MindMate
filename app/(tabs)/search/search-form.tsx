@@ -20,13 +20,12 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SearchFormSchema, searchFormSchema } from '@/src/features/search/utils/search-form-schema';
 import ImageButton from '@/src/components/ui/image-button';
 import { MediaType } from '@/src/types/common-db-types';
-import {  fetchInsertMedia, pickMedia } from '@/src/lib/media-services';
+import { fetchInsertMedia, pickMedia } from '@/src/lib/media-services';
 import {
   fetchGetMediaById,
   fetchGetSearchById,
   fetchInsertSearch,
   fetchUpdateSearchById,
-  
 } from '@/src/features/search/search-services';
 import Toast from 'react-native-toast-message';
 
@@ -126,7 +125,7 @@ const SearchForm = () => {
 
   // 이미지 추가 함수
   const handleAddImage = async () => {
-    const newImage = await pickMedia();
+    const newImage = (await pickMedia()) as MediaType | undefined;
     if (!newImage) return;
     setImages((prev) => [...prev, newImage]);
   };

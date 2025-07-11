@@ -21,8 +21,8 @@ export const useMediaPicker = (watchedMedia: DiaryMediaType[], setValue: UseForm
       return;
     }
 
-    const options = ['카메라로 촬영', '갤러리에서 선택', '취소'];
-    Alert.alert('이미지 추가', '이미지를 추가할 방법을 선택하세요.', [
+    const options = ['카메라로 촬영', '앨범에서 선택(5개)', '취소'];
+    Alert.alert('이미지 추가', '방법을 선택하세요', [
       {
         text: options[0],
         onPress: async () => {
@@ -35,8 +35,8 @@ export const useMediaPicker = (watchedMedia: DiaryMediaType[], setValue: UseForm
 
             if (!result.canceled) {
               // 이미지 처리 시뮬레이션
-              await new Promise(resolve => setTimeout(resolve, 800));
-              
+              await new Promise((resolve) => setTimeout(resolve, 800));
+
               const newMedia: DiaryMediaType = {
                 id: Date.now().toString(),
                 type: 'image',
@@ -59,18 +59,20 @@ export const useMediaPicker = (watchedMedia: DiaryMediaType[], setValue: UseForm
             const result = await ImagePicker.launchImageLibraryAsync({
               mediaTypes: ImagePicker.MediaTypeOptions.Images,
               quality: 0.8,
+              allowsMultipleSelection: true,
+              selectionLimit: 5, // 최대 5개까지 선택 가능
             });
 
             if (!result.canceled) {
               // 이미지 처리 시뮬레이션
-              await new Promise(resolve => setTimeout(resolve, 800));
-              
-              const newMedia: DiaryMediaType = {
-                id: Date.now().toString(),
+              await new Promise((resolve) => setTimeout(resolve, 800));
+
+              const newMediaItems: DiaryMediaType[] = result.assets.map((asset, index) => ({
+                id: (Date.now() + index).toString(),
                 type: 'image',
-                uri: result.assets[0].uri,
-              };
-              setValue('media', [...watchedMedia, newMedia]);
+                uri: asset.uri,
+              }));
+              setValue('media', [...watchedMedia, ...newMediaItems]);
             }
             finishUpload();
           } catch (error) {
@@ -92,8 +94,8 @@ export const useMediaPicker = (watchedMedia: DiaryMediaType[], setValue: UseForm
       return;
     }
 
-    const options = ['카메라로 촬영', '갤러리에서 선택', '취소'];
-    Alert.alert('동영상 추가', '동영상을 추가할 방법을 선택하세요.', [
+    const options = ['카메라로 촬영', '앨범에서 선택(3개)', '취소'];
+    Alert.alert('동영상 추가', '방법을 선택하세요', [
       {
         text: options[0],
         onPress: async () => {
@@ -108,8 +110,8 @@ export const useMediaPicker = (watchedMedia: DiaryMediaType[], setValue: UseForm
               // 비디오 처리 시뮬레이션 (용량에 따라 더 오래)
               const duration = result.assets[0].duration || 0;
               const processingTime = Math.max(2000, Math.min(duration * 100, 8000)); // 2-8초
-              await new Promise(resolve => setTimeout(resolve, processingTime));
-              
+              await new Promise((resolve) => setTimeout(resolve, processingTime));
+
               const newMedia: DiaryMediaType = {
                 id: Date.now().toString(),
                 type: 'video',
@@ -133,21 +135,26 @@ export const useMediaPicker = (watchedMedia: DiaryMediaType[], setValue: UseForm
             const result = await ImagePicker.launchImageLibraryAsync({
               mediaTypes: ImagePicker.MediaTypeOptions.Videos,
               videoQuality: ImagePicker.UIImagePickerControllerQualityType.Medium,
+              allowsMultipleSelection: true,
+              selectionLimit: 3, // 비디오는 용량이 커서 3개까지만
             });
 
             if (!result.canceled) {
               // 비디오 처리 시뮬레이션 (용량에 따라 더 오래)
-              const duration = result.assets[0].duration || 0;
-              const processingTime = Math.max(2000, Math.min(duration * 100, 8000)); // 2-8초
-              await new Promise(resolve => setTimeout(resolve, processingTime));
-              
-              const newMedia: DiaryMediaType = {
-                id: Date.now().toString(),
+              const totalDuration = result.assets.reduce(
+                (sum, asset) => sum + (asset.duration || 0),
+                0,
+              );
+              const processingTime = Math.max(2000, Math.min(totalDuration * 100, 10000)); // 2-10초
+              await new Promise((resolve) => setTimeout(resolve, processingTime));
+
+              const newMediaItems: DiaryMediaType[] = result.assets.map((asset, index) => ({
+                id: (Date.now() + index).toString(),
                 type: 'video',
-                uri: result.assets[0].uri,
-                duration: result.assets[0].duration ?? undefined,
-              };
-              setValue('media', [...watchedMedia, newMedia]);
+                uri: asset.uri,
+                duration: asset.duration ?? undefined,
+              }));
+              setValue('media', [...watchedMedia, ...newMediaItems]);
             }
             finishUpload();
           } catch (error) {

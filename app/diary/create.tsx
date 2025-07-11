@@ -202,7 +202,7 @@ const DiaryCreatePage = () => {
                 className="mb-4 px-4 py-4 text-xl font-medium"
                 style={{
                   borderBottomWidth: 1,
-                  borderBottomColor: Colors.gray,
+                  borderBottomColor: Colors.paleCobalt,
                   fontFamily:
                     watchedStyle.fontFamily === 'default' ? undefined : watchedStyle.fontFamily,
                   color: watchedStyle.textColor,

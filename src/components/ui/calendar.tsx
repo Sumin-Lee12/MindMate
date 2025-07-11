@@ -8,15 +8,22 @@ import { addDays, getWeekStart, isSameDay } from '@/src/utils/date';
  * 1주 단위 가로 달력 컴포넌트
  * @param selectedDate - 선택된 날짜
  * @param onChange - 날짜 선택 시 콜백
+ * @param onCalendarIconPress - 달력 아이콘 클릭 시 콜백
  * @param className - 추가적인 스타일 클래스
  */
 type CalendarProps = {
   selectedDate: Date;
   onChange: (date: Date) => void;
+  onCalendarIconPress?: () => void;
   className?: string;
 };
 
-const Calendar = ({ selectedDate, onChange, className = '' }: CalendarProps) => {
+const Calendar = ({
+  selectedDate,
+  onChange,
+  onCalendarIconPress,
+  className = '',
+}: CalendarProps) => {
   const [viewDate, setViewDate] = useState(getWeekStart(selectedDate));
 
   useEffect(() => {
@@ -24,7 +31,9 @@ const Calendar = ({ selectedDate, onChange, className = '' }: CalendarProps) => 
   }, [selectedDate]);
 
   const weekDates = useMemo(() => {
-    return Array.from({ length: 7 }, (_, i) => addDays(viewDate, i));
+    return Array.from({ length: 7 }, (_, i) => {
+      return new Date(viewDate.getFullYear(), viewDate.getMonth(), viewDate.getDate() + i);
+    });
   }, [viewDate]);
 
   // 날짜 포맷: 2025년 7월 4일
@@ -37,7 +46,9 @@ const Calendar = ({ selectedDate, onChange, className = '' }: CalendarProps) => 
         <View className="flex-1 items-center">
           <Text className="text-lg font-bold">{dateText}</Text>
         </View>
-        <CalendarIcon color="#576BCD" size={28} />
+        <TouchableOpacity onPress={onCalendarIconPress || (() => {})}>
+          <CalendarIcon color="#576BCD" size={28} />
+        </TouchableOpacity>
       </View>
       {/* 요일+날짜 */}
       <View className="flex-row items-center justify-between">
@@ -46,7 +57,9 @@ const Calendar = ({ selectedDate, onChange, className = '' }: CalendarProps) => 
           return (
             <TouchableOpacity
               key={date.toISOString()}
-              onPress={() => onChange(date)}
+              onPress={() => {
+                onChange(date);
+              }}
               className={`w-7 items-center justify-center rounded-full py-1 ${isSelected ? 'bg-paleYellow' : ''}`}
             >
               <Text className={`text-xs font-medium ${isSelected ? 'text-black' : 'text-gray'}`}>
