@@ -20,7 +20,12 @@ const AddressBookItem = ({ contact, refetch }: { contact: Contact; refetch: () =
   const router = useRouter();
   const [isActionMenuVisible, setIsActionMenuVisible] = useState(false);
   const getContactTagsUseCallBack = useCallback(() => getContactTags(contact.id), [contact.id]);
-  const { data: tags } = useAsyncDataGet(getContactTagsUseCallBack);
+  const { data: tags, refetch: refetchTags } = useAsyncDataGet(getContactTagsUseCallBack);
+
+  const refetchForEditTags = () => {
+    refetchTags();
+    refetch();
+  };
 
   useEffect(() => {
     getAllTags().then((tags) => {
@@ -45,7 +50,7 @@ const AddressBookItem = ({ contact, refetch }: { contact: Contact; refetch: () =
         <View className="flex-row justify-between">
           <View className="flex-row flex-wrap gap-1">
             {tags?.map((tag) => <AddressBookTag key={tag.id}>{tag.name}</AddressBookTag>)}
-            <EditAddressBookTagButton />
+            <EditAddressBookTagButton refetch={refetchForEditTags} />
           </View>
           <View className="flex-row items-start justify-between gap-2">
             <AddressBookName>{contact.name}</AddressBookName>
@@ -68,7 +73,7 @@ const AddressBookItem = ({ contact, refetch }: { contact: Contact; refetch: () =
         <View className="flex-row">
           {/* 프로필사진 컴포넌트 */}
           <View className="flex-[1] justify-center">
-            <AddressBookImage />
+            <AddressBookImage image={contact.profile_image} id={contact.id.toString()} />
           </View>
 
           {/* 텍스트 정보 */}
