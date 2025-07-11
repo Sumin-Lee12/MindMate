@@ -22,10 +22,10 @@ const AddressBookItem = ({ contact, refetch }: { contact: Contact; refetch: () =
   const getContactTagsUseCallBack = useCallback(() => getContactTags(contact.id), [contact.id]);
   const { data: tags, refetch: refetchTags } = useAsyncDataGet(getContactTagsUseCallBack);
 
-  const refetchForEditTags = () => {
+  const refetchForEditTags = useCallback(() => {
     refetchTags();
     refetch();
-  };
+  }, [refetchTags, refetch]);
 
   useEffect(() => {
     getAllTags().then((tags) => {
@@ -50,7 +50,7 @@ const AddressBookItem = ({ contact, refetch }: { contact: Contact; refetch: () =
         <View className="flex-row justify-between">
           <View className="flex-row flex-wrap gap-1">
             {tags?.map((tag) => <AddressBookTag key={tag.id}>{tag.name}</AddressBookTag>)}
-            <EditAddressBookTagButton refetch={refetchForEditTags} />
+            <EditAddressBookTagButton refetch={refetchForEditTags} contact={contact} />
           </View>
           <View className="flex-row items-start justify-between gap-2">
             <AddressBookName>{contact.name}</AddressBookName>

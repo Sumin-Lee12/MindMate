@@ -6,12 +6,18 @@ import { Text, TextInput, TouchableOpacity, View } from 'react-native';
 import AddressBookTag from './address-book-tag';
 import { getAllTags, getContactTags } from '../services/get-tag-data';
 import Button from '@/src/components/ui/button';
-import { Tag } from '../types/address-book-type';
+import { Contact, Tag } from '../types/address-book-type';
 import ActionMenu from './action-menu';
 import { formTextStyle } from '../constants/style-class-constants';
-import { updateTag } from '../services/mutation-tag-data';
+import { addTagToContact, removeTagFromContact, updateTag } from '../services/mutation-tag-data';
 
-const EditAddressBookTagButton = ({ refetch }: { refetch: () => void }) => {
+const EditAddressBookTagButton = ({
+  refetch,
+  contact,
+}: {
+  refetch: () => void;
+  contact: Contact;
+}) => {
   const [isModalVisible, setIsModalVisible] = useState(false);
 
   useEffect(() => {
@@ -32,6 +38,7 @@ const EditAddressBookTagButton = ({ refetch }: { refetch: () => void }) => {
           isModalVisible={isModalVisible}
           setIsModalVisible={setIsModalVisible}
           refetchItemTags={refetch}
+          contact={contact}
         />
       )}
     </>
@@ -42,37 +49,44 @@ const SelectAddressBookTagModal = ({
   isModalVisible,
   setIsModalVisible,
   refetchItemTags,
+  contact,
 }: {
   isModalVisible: boolean;
   setIsModalVisible: (isModalVisible: boolean) => void;
   refetchItemTags: () => void;
+  contact: Contact;
 }) => {
   const [isActionMenuVisible, setIsActionMenuVisible] = useState(false);
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
-  const [tag, setTag] = useState<Tag | null>(null);
+  const [tagState, setTagState] = useState<Tag | null>(null);
   const [isEditTag, setIsEditTag] = useState(false);
 
   const getAllTagsUseCallback = useCallback(getAllTags, []);
   const { data: allTags, refetch: refetchAllTags } = useAsyncDataGet(getAllTagsUseCallback);
 
-  const refetch = useCallback(() => {
-    refetchAllTags();
-    refetchItemTags();
+  const refetch = useCallback(async () => {
+    await refetchAllTags();
+    await refetchItemTags();
   }, [refetchAllTags, refetchItemTags]);
 
-  console.log(allTags);
-
-  const handleTag = (tag: Tag) => {
+  const handleTag = async (tag: Tag) => {
     //태그편집
     if (isEditTag) {
       setIsActionMenuVisible(true);
-      setTag(tag);
+      setTagState(tag);
       // refetch();
     }
     //태그선택
     if (!isEditTag) {
-      // setIsEditTag(!isEditTag);
-      // refetch();
+      const isHasTag = allTags?.some((t) => t.id === tag.id);
+      console.log(isEditTag, 'isEditTag');
+      if (!isHasTag) {
+        await addTagToContact(contact.id, tag.id);
+      }
+      if (isHasTag) {
+        await removeTagFromContact(contact.id, tag.id);
+      }
+      refetch();
     }
   };
 
@@ -104,12 +118,12 @@ const SelectAddressBookTagModal = ({
           onDelete={() => {}}
         />
       )}
-      {isEditModalVisible && tag && (
+      {isEditModalVisible && tagState && (
         <EditAddressBookTagModal
           isModalVisible={isEditModalVisible}
           setIsModalVisible={setIsEditModalVisible}
           refetch={refetch}
-          tag={tag}
+          tag={tagState}
         />
       )}
     </BottomModal>
