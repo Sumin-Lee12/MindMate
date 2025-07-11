@@ -30,6 +30,7 @@ import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import type { DateTimePickerProps } from 'react-native-modal-datetime-picker';
 import { useMediaPicker } from 'src/features/diary/hooks/use-media-picker';
 import { useForm } from 'react-hook-form';
+import { useAlarm } from 'src/features/routine/hooks/use-alarm';
 
 const RoutineDetail = () => {
   const { id, startDate } = useLocalSearchParams();
@@ -76,6 +77,9 @@ const RoutineDetail = () => {
     watchedMedia,
     setValue,
   );
+
+  // 알람 훅
+  const { initializeAlarms, scheduleRecurringAlarm, cancelAlarm } = useAlarm();
 
   // 기존 루틴 데이터 로드 (수정 모드)
   useEffect(() => {
@@ -134,6 +138,44 @@ const RoutineDetail = () => {
     setImageUrl('');
   };
 
+  // 알람 설정
+  const setupAlarm = async (routineData: any) => {
+    try {
+      // 알람 초기화
+      const initialized = await initializeAlarms();
+      if (!initialized) {
+        console.log('알람 초기화 실패');
+        return false;
+      }
+
+      // 기존 알람 취소 (수정 모드)
+      if (isEdit) {
+        await cancelAlarm(id as string);
+      }
+
+      // 알람이 활성화되어 있고 알람 시간이 설정된 경우에만 알람 설정
+      if (isAlarmEnabled && routineData.alarmTime) {
+        const routineStartDate =
+          isEdit && routine ? new Date(routine.createdAt) : new Date(startDate as string);
+        const endDate = routineData.deadline ? new Date(routineData.deadline) : undefined;
+
+        const success = await scheduleRecurringAlarm(routineData, routineStartDate, endDate);
+        if (success) {
+          console.log('알람 설정 완료');
+          return true;
+        } else {
+          console.log('알람 설정 실패');
+          return false;
+        }
+      }
+
+      return true;
+    } catch (error) {
+      console.error('알람 설정 중 오류:', error);
+      return false;
+    }
+  };
+
   // 루틴 저장/수정
   const handleSave = async () => {
     // 유효성 검사
@@ -175,6 +217,22 @@ const RoutineDetail = () => {
 
       const result = await updateRoutine(updatePayload);
       if (result) {
+        // 알람 설정
+        const routineData = {
+          id: id as string,
+          name: title.trim(),
+          details: description.trim() || undefined,
+          repeatCycle: isRepeatEnabled ? repeatInfo : '없음',
+          alarmTime: timeString,
+          imageUrl: imageUrl || undefined,
+          subTasks: subTasksData,
+          deadline,
+          createdAt: routine?.createdAt || new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        };
+
+        await setupAlarm(routineData);
+
         Alert.alert('성공', '루틴이 수정되었습니다.', [
           { text: '확인', onPress: () => router.back() },
         ]);
@@ -195,6 +253,22 @@ const RoutineDetail = () => {
 
       const result = await createRoutine(createPayload);
       if (result) {
+        // 알람 설정
+        const routineData = {
+          id: result.id,
+          name: title.trim(),
+          details: description.trim() || undefined,
+          repeatCycle: isRepeatEnabled ? repeatInfo : '없음',
+          alarmTime: timeString,
+          imageUrl: imageUrl || undefined,
+          subTasks: subTasksData,
+          deadline,
+          createdAt: startDate as string,
+          updatedAt: new Date().toISOString(),
+        };
+
+        await setupAlarm(routineData);
+
         Alert.alert('성공', '루틴이 생성되었습니다.', [
           { text: '확인', onPress: () => router.back() },
         ]);

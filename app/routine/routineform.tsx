@@ -168,10 +168,9 @@ const RoutineForm = () => {
           {/* 알림 */}
           <View className="mb-4 flex-row items-center rounded-xl bg-[#F7F8FD] px-4 py-3 shadow-sm">
             <Ionicons name="alarm-outline" size={20} color="#FF4848" style={{ marginRight: 8 }} />
-            <Text className="mr-4 text-[16px] text-[#222]">
+            <Text className="text-[16px] text-[#222]">
               {routine.alarmTime ? routine.alarmTime.replace(':', ' : ') : '-- : --'}
             </Text>
-            <Ionicons name="toggle" size={22} color="#B0B8CC" />
           </View>
 
           {/* 하위 작업 */}
