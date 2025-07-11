@@ -22,7 +22,7 @@ const AddressBookSelfItem = () => {
         </TouchableOpacity>
       </View>
       <View className="item-center flex">
-        <AddressBookImage />
+        <AddressBookImage image={data.profile_image} id={data.id.toString()} />
         <Text className="text-sm">{data.phone_number}</Text>
       </View>
     </View>
