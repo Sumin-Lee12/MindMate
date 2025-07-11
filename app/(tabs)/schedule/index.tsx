@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, ScrollView, SafeAreaView, Image } from 'r
 import { Calendar, Check, BellRing, BellOff } from 'lucide-react-native';
 import { router } from 'expo-router';
 import { Colors } from '../../../src/constants/colors';
+import AddButton from 'src/components/ui/add-button';
 
 type TaskItemProps = {
   time: string;
@@ -22,17 +23,20 @@ const SchedulePage = () => {
 
   const TaskItem = ({ time, title, completed, hasNotification }: TaskItemProps) => (
     <View className="relative mb-3 h-20 justify-center rounded-lg bg-white p-4 shadow-dropShadow">
+    <View className="relative mb-3 h-20 justify-center rounded-lg bg-white p-4 shadow-dropShadow">
       <View
         className={`absolute left-0 h-20 w-2 rounded-l-md ${completed ? 'bg-teal' : 'bg-pink'}`}
       ></View>
       <View className="flex-row items-center justify-between">
         <View className="flex-row items-center">
           <Text className="mr-4 text-sm text-gray">{time}</Text>
+          <Text className="mr-4 text-sm text-gray">{time}</Text>
           <Text className="text-md font-bold text-black">{title}</Text>
         </View>
         <View className="flex-row items-center">
-          // 아이콘으로 들어가는 체크 표시와 종은 lucid Icon 설치 이후 수정하겠습니다!
+          {/** 아이콘으로 들어가는 체크 표시와 종은 lucid Icon 설치 이후 수정하겠습니다! */}
           {completed ? (
+            <View className="mr-2 h-7 w-7 items-center justify-center rounded-md bg-teal">
             <View className="mr-2 h-7 w-7 items-center justify-center rounded-md bg-teal">
               <Text className="text-xs">
                 <Check color={Colors.black} />
@@ -40,6 +44,7 @@ const SchedulePage = () => {
             </View>
           ) : (
             <>
+              <View className="mr-4 h-7 w-7 items-center justify-center rounded-md border-2 border-pink">
               <View className="mr-4 h-7 w-7 items-center justify-center rounded-md border-2 border-pink">
                 <Text className="text-xs"></Text>
               </View>
@@ -61,10 +66,12 @@ const SchedulePage = () => {
 
   return (
     <SafeAreaView className="flex-1 bg-turquoise">
+    <SafeAreaView className="flex-1 bg-turquoise">
       <ScrollView className="flex-1">
         {/* 오늘 날짜 헤더 */}
         <View className="mt-6 px-4">
           <View className="relative mb-6 flex-row items-center justify-center">
+            <Text className="text-lg text-paleCobalt">2025년 6월 5일</Text>
             <Text className="text-lg text-paleCobalt">2025년 6월 5일</Text>
             <TouchableOpacity className="absolute right-0 p-2">
               <Calendar color={Colors.paleCobalt} />
@@ -83,6 +90,8 @@ const SchedulePage = () => {
                 >
                   <Text className="text-sm text-paleCobalt">{day}</Text>
                   <Text className="text-base font-medium text-paleCobalt">{dates[index]}</Text>
+                  <Text className="text-sm text-paleCobalt">{day}</Text>
+                  <Text className="text-base font-medium text-paleCobalt">{dates[index]}</Text>
                 </TouchableOpacity>
               </View>
             ))}
@@ -93,8 +102,10 @@ const SchedulePage = () => {
             <View className="flex-row items-center justify-between">
               <View className="relative gap-4">
                 <Text className="justify-start text-lg font-bold text-paleCobalt">
+                <Text className="justify-start text-lg font-bold text-paleCobalt">
                   오늘 일정 <Text className="font-bold text-black">14</Text>개 중
                 </Text>
+                <Text className="text-xl font-bold text-paleCobalt">
                 <Text className="text-xl font-bold text-paleCobalt">
                   총 <Text className="font-bold text-black">10</Text>개를 완료
                   <Text className="text-lg">했어요!</Text>
@@ -102,7 +113,7 @@ const SchedulePage = () => {
               </View>
               <Image
                 className="bottom-6 z-20 h-16 w-16"
-                source={require('../../../assets/winking-face-png.png')}
+                source={require('@assets/winking-face-png.png')}
               />
             </View>
           </View>
@@ -112,15 +123,18 @@ const SchedulePage = () => {
           <View className="mb-4 flex-1 flex-row justify-end">
             <View className="mr-2 flex-row gap-2 px-3 py-1">
               <View className="h-6 w-6 rounded-md bg-pink"></View>
+              <View className="h-6 w-6 rounded-md bg-pink"></View>
               <Text className="text-sm font-medium">미완료</Text>
             </View>
             <View className="mr-2 flex-row gap-2 px-3 py-1">
+              <View className="h-6 w-6 rounded-md bg-teal"></View>
               <View className="h-6 w-6 rounded-md bg-teal"></View>
               <Text className="text-sm font-medium">완료</Text>
             </View>
           </View>
 
           {/* 미완료 칸 */}
+          <Text className="mb-3 text-md font-bold text-black">미완료</Text>
           <Text className="mb-3 text-md font-bold text-black">미완료</Text>
           <TaskItem
             time="08:00"
@@ -136,6 +150,7 @@ const SchedulePage = () => {
           />
 
           {/* 완료 칸 */}
+          <Text className="mb-3 mt-6 text-md font-bold text-black">완료</Text>
           <Text className="mb-3 mt-6 text-md font-bold text-black">완료</Text>
           <TaskItem
             time="08:00"

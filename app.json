@@ -2,6 +2,7 @@
   "expo": {
     "name": "MindMate",
     "slug": "MindMate",
+    "scheme": "mindmate",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -26,6 +27,20 @@
       "favicon": "./assets/favicon.png",
       "bundler": "metro"
     },
-    "plugins": ["expo-sqlite"]
+    "plugins": [
+      "expo-sqlite",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "This app uses the photo library to select images.",
+          "cameraPermission": "This app uses the camera to take photos."
+        }
+      ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "49e12348-2203-4a9a-8826-bd82c1c839f7"
+      }
+    }
   }
 }
