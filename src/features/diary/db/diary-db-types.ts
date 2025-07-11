@@ -32,7 +32,7 @@ export type DiaryTableType = {
   updated_at: string | null;
   /** 삭제 일시 */
   deleted_at: string | null;
-  /** 즐겨찾기 여부 */
+  /** 북마크 여부 */
   is_favorite: number | null;
 };
 

@@ -29,7 +29,7 @@ type SortOrderType = 'asc' | 'desc';
  * 주요 기능:
  * - 일기 목록 표시 (썸네일 이미지 포함)
  * - 정렬 기능 (최신순/오래된순)
- * - 검색, 휴지통, 통계, 즐겨찾기 기능 접근
+ * - 검색, 휴지통, 통계, 북마크 기능 접근
  * - 새 일기 작성 버튼
  * - 날짜 기반 섹션 그룹화
  * - 실시간 데이터 새로고침 (useFocusEffect)
@@ -137,55 +137,56 @@ const DiaryListPage = () => {
   return (
     <View className="flex-1 bg-turquoise">
       <ScrollView
-        contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 96 }}
+        className="flex-1"
+        contentContainerStyle={{ 
+          paddingHorizontal: 12, 
+          paddingTop: 12, 
+          paddingBottom: 80 
+        }}
+        contentContainerClassName="sm:px-4 sm:pt-4 sm:pb-24 lg:px-6 lg:pt-6"
       >
         {/* 기능 버튼들 */}
         <View className="mb-4">
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{ paddingRight: 16, paddingLeft: 2 }}
-            className="mb-3"
-          >
-            <View className="flex-row gap-3">
+          <View className="flex-row gap-1 sm:gap-2">
+            <Pressable
+              onPress={() => router.push('/diary/trash')}
+              className="flex-1 flex-row items-center justify-center gap-1 rounded-lg bg-white px-1 sm:px-2 py-2 sm:py-2.5 shadow-sm min-h-[40px] sm:min-h-[44px]"
+            >
+              <Trash2 color={'#576bcd'} size={14} className="sm:w-4 sm:h-4" />
+              <Text className="text-xs sm:text-sm font-medium text-paleCobalt">휴지통</Text>
+            </Pressable>
+            <Pressable
+              onPress={() => router.push('/diary/stats')}
+              className="flex-1 flex-row items-center justify-center gap-1 rounded-lg bg-white px-1 sm:px-2 py-2 sm:py-2.5 shadow-sm min-h-[40px] sm:min-h-[44px]"
+            >
+              <BarChart3 color={'#576bcd'} size={14} className="sm:w-4 sm:h-4" />
+              <Text className="text-xs sm:text-sm font-medium text-paleCobalt">통계</Text>
+            </Pressable>
+            <Pressable
+              onPress={() => router.push('/diary/favorites')}
+              className="flex-1 flex-row items-center justify-center gap-1 rounded-lg bg-white px-1 sm:px-2 py-2 sm:py-2.5 shadow-sm min-h-[40px] sm:min-h-[44px]"
+            >
+              <Star color={'#FFD700'} size={14} fill={'#FFD700'} className="sm:w-4 sm:h-4" />
+              <Text className="text-xs sm:text-sm font-medium text-paleCobalt">북마크</Text>
+            </Pressable>
+            <Pressable
+              onPress={() => setShowSearchModal(true)}
+              className="flex-1 flex-row items-center justify-center gap-1 rounded-lg bg-white px-1 sm:px-2 py-2 sm:py-2.5 shadow-sm min-h-[40px] sm:min-h-[44px]"
+            >
+              <Search color={'#576bcd'} size={14} className="sm:w-4 sm:h-4" />
+              <Text className="text-xs sm:text-sm font-medium text-paleCobalt">검색</Text>
+            </Pressable>
+          </View>
+          {isSearchActive && (
+            <View className="mt-2 px-2">
               <Pressable
-                onPress={() => router.push('/diary/trash')}
-                className="min-w-[70px] flex-row items-center gap-1 rounded-lg bg-white px-2.5 py-2.5 shadow-sm"
+                onPress={handleResetSearch}
+                className="rounded-lg bg-paleYellow px-4 py-2.5"
               >
-                <Trash2 color={'#576bcd'} size={16} />
-                <Text className="text-sm font-medium text-paleCobalt">휴지통</Text>
+                <Text className="text-center text-sm font-medium text-paleCobalt">전체보기</Text>
               </Pressable>
-              <Pressable
-                onPress={() => router.push('/diary/stats')}
-                className="min-w-[70px] flex-row items-center gap-1 rounded-lg bg-white px-2.5 py-2.5 shadow-sm"
-              >
-                <BarChart3 color={'#576bcd'} size={16} />
-                <Text className="text-sm font-medium text-paleCobalt">통계</Text>
-              </Pressable>
-              <Pressable
-                onPress={() => router.push('/diary/favorites')}
-                className="min-w-[70px] flex-row items-center gap-1 rounded-lg bg-white px-2.5 py-2.5 shadow-sm"
-              >
-                <Star color={'#FFD700'} size={16} fill={'#FFD700'} />
-                <Text className="text-sm font-medium text-paleCobalt">즐겨찾기</Text>
-              </Pressable>
-              <Pressable
-                onPress={() => setShowSearchModal(true)}
-                className="min-w-[70px] flex-row items-center gap-1 rounded-lg bg-white px-2.5 py-2.5 shadow-sm"
-              >
-                <Search color={'#576bcd'} size={16} />
-                <Text className="text-sm font-medium text-paleCobalt">검색</Text>
-              </Pressable>
-              {isSearchActive && (
-                <Pressable
-                  onPress={handleResetSearch}
-                  className="min-w-[70px] rounded-lg bg-paleYellow px-4 py-2.5"
-                >
-                  <Text className="text-sm font-medium text-paleCobalt">전체보기</Text>
-                </Pressable>
-              )}
             </View>
-          </ScrollView>
+          )}
         </View>
 
         {/* 섹션별 목록, 로딩 상태, 또는 빈 상태 */}
@@ -339,9 +340,9 @@ const DiaryListPage = () => {
       {/* + 버튼 */}
       <Pressable
         onPress={() => router.push('/diary/create')}
-        className="absolute bottom-16 right-6 h-16 w-16 items-center justify-center rounded-full bg-paleCobalt shadow-md"
+        className="absolute bottom-20 sm:bottom-24 right-8 sm:right-12 w-16 h-16 sm:w-20 sm:h-20 items-center justify-center rounded-full bg-paleCobalt shadow-lg"
       >
-        <AntDesign name="plus" size={36} color="white" />
+        <AntDesign name="plus" size={32} color="white" className="sm:text-5xl" />
       </Pressable>
 
       {/* 검색 모달 */}
