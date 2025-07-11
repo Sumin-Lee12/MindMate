@@ -145,7 +145,15 @@ const RoutineDetail = () => {
         ]);
       }
     } else {
-      // 생성 모드
+      const now = new Date();
+      console.log('루틴 생성 시점 startDate:', startDate);
+      console.log('루틴 생성 시점 createdAt(페이로드):', startDate);
+      console.log(
+        '루틴 생성 시점 new Date():',
+        now,
+        'KST:',
+        new Date(now.getTime() + 9 * 60 * 60 * 1000),
+      );
       const createPayload: CreateRoutinePayload = {
         name: title.trim(),
         details: description.trim() || undefined,
@@ -155,6 +163,7 @@ const RoutineDetail = () => {
         subTasks: subTasksData,
         startDate: startDate as string, // 시작 날짜 추가
         deadline,
+        createdAt: startDate as string, // createdAt을 명시적으로 저장
       };
 
       const result = await createRoutine(createPayload);
@@ -278,9 +287,12 @@ const RoutineDetail = () => {
             {/* 반복 */}
             <View className="mb-3 flex-row items-center">
               <Ionicons name="time-outline" size={18} color="#7B7FD6" style={{ marginRight: 8 }} />
-              <Text className="text-base font-bold text-[#7B7FD6]" style={{ width: 48 }}>
+              <Text style={{ width: 48 }} className="text-base font-bold text-[#7B7FD6]">
                 반복
               </Text>
+              <TouchableOpacity onPress={() => setShowRepeatInfo(true)} style={{ marginRight: 8 }}>
+                <Ionicons name="help-circle-outline" size={16} color="#7B7FD6" />
+              </TouchableOpacity>
               <TouchableOpacity
                 className="flex-1"
                 onPress={() => {

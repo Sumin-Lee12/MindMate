@@ -7,6 +7,12 @@ import RoutineListCard from 'src/features/routine/components/RoutineListCard';
 import { useRoutineQuery } from 'src/features/routine/hooks/use-routine-query';
 import { useDeleteRoutine } from 'src/features/routine/hooks/use-routine-mutation';
 
+// KST(UTC+9) 기준 YYYY-MM-DD 문자열로 변환하는 함수
+function toKSTDateString(date: Date) {
+  const kst = new Date(date.getTime() + 9 * 60 * 60 * 1000);
+  return kst.toISOString().slice(0, 10);
+}
+
 const RoutineMain = () => {
   const router = useRouter();
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -21,7 +27,7 @@ const RoutineMain = () => {
 
   // 루틴 생성 페이지로 이동
   const handleCreateRoutine = () => {
-    const selectedDateStr = selectedDate.toISOString().split('T')[0]; // YYYY-MM-DD 형식
+    const selectedDateStr = toKSTDateString(selectedDate); // KST 기준으로 변환
     router.push(`/routine/new?startDate=${selectedDateStr}`);
   };
 
@@ -46,7 +52,12 @@ const RoutineMain = () => {
 
   // 날짜 변경 시 루틴 목록 새로고침
   const handleDateChange = (date: Date) => {
-    setSelectedDate(date);
+    const year = date.getFullYear();
+    const month = date.getMonth();
+    const day = date.getDate();
+    // KST 00:00:00을 UTC로 맞추기 위해 Date.UTC 사용
+    const kstDate = new Date(Date.UTC(year, month, day, 0, 0, 0));
+    setSelectedDate(kstDate);
   };
 
   // 시간 포맷팅 함수
@@ -104,6 +115,11 @@ const RoutineMain = () => {
       </View>
     );
   }
+
+  // 렌더링 시 selectedDate와 options.date 콘솔 출력
+  console.log('selectedDate:', selectedDate);
+  const selectedDateStr = toKSTDateString(selectedDate);
+  console.log('options.date:', selectedDateStr);
 
   return (
     <View className="relative flex-1 bg-turquoise">

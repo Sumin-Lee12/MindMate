@@ -62,6 +62,7 @@ export type CreateRoutinePayload = {
   deadline?: string;
   startDate?: string; // 루틴 시작 날짜 (YYYY-MM-DD 형식)
   subTasks: Omit<SubTaskType, 'id' | 'routineId' | 'isCompleted'>[];
+  createdAt?: string; // 생성일(YYYY-MM-DD 형식)
 };
 
 export type UpdateRoutinePayload = Partial<CreateRoutinePayload> & {

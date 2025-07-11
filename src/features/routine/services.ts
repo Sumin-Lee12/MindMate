@@ -80,8 +80,8 @@ export const fetchGetRoutines = async (
 
     // 날짜 필터링 (해당 날짜 이전에 생성된 루틴만 - 반복 설정에 따라 해당 날짜에 실행될 수 있음)
     if (options.date) {
-      conditions.push('r.created_at <= ?');
-      params.push(`${options.date} 23:59:59`);
+      conditions.push("DATE(r.created_at, '+9 hours') <= DATE(?, '+9 hours')");
+      params.push(options.date); // 'YYYY-MM-DD'만 전달
     }
 
     if (conditions.length > 0) {
@@ -154,13 +154,16 @@ export const fetchGetRoutines = async (
 
     // 특정 날짜에 실행되어야 하는 루틴만 필터링
     if (options.date) {
-      // YYYY-MM-DD 형식을 로컬 시간대로 정확히 파싱
+      // YYYY-MM-DD 형식을 UTC 기반으로 정확히 파싱
       const [year, month, day] = options.date.split('-').map(Number);
-      const targetDate = new Date(year, month - 1, day); // month는 0-based
+      const targetDate = new Date(Date.UTC(year, month - 1, day, 0, 0, 0)); // UTC 기반으로 생성
 
-      return allRoutines.filter((routine) => {
-        return shouldRunOnDate(routine, targetDate);
+      const filteredRoutines = allRoutines.filter((routine) => {
+        const shouldRun = shouldRunOnDate(routine, targetDate);
+        return shouldRun;
       });
+
+      return filteredRoutines;
     }
 
     return allRoutines;
@@ -208,16 +211,20 @@ export const fetchCreateRoutine = async (payload: CreateRoutinePayload): Promise
     // 시작 날짜가 있으면 해당 날짜를, 없으면 현재 시간을 사용
     const startDate = payload.startDate
       ? (() => {
-          const [year, month, day] = payload.startDate.split('-').map(Number);
-          const parsedDate = new Date(year, month - 1, day);
-          // 로컬 시간대로 저장 (UTC가 아닌)
-          return parsedDate.toISOString().split('T')[0] + 'T00:00:00.000Z';
+          const date = new Date(payload.startDate);
+          const year = date.getFullYear();
+          const month = (date.getMonth() + 1).toString().padStart(2, '0');
+          const day = date.getDate().toString().padStart(2, '0');
+          const pureDate = `${year}-${month}-${day}`;
+          return pureDate;
         })()
       : (() => {
           const now = new Date();
-          const localDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-          // 로컬 시간대로 저장 (UTC가 아닌)
-          return localDate.toISOString().split('T')[0] + 'T00:00:00.000Z';
+          const year = now.getFullYear();
+          const month = (now.getMonth() + 1).toString().padStart(2, '0');
+          const day = now.getDate().toString().padStart(2, '0');
+          const pureDate = `${year}-${month}-${day}`;
+          return pureDate;
         })();
     const routineData = mapToCreateRoutineDbType(payload);
 
