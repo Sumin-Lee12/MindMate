@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { View, ScrollView, Text, ActivityIndicator } from 'react-native';
+import { View, ScrollView, Text, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import AddButton from 'src/components/ui/add-button';
 import Calendar from 'src/components/ui/calendar';
+import Modal from 'src/components/ui/modal';
 import RoutineListCard from 'src/features/routine/components/RoutineListCard';
 import { useRoutineQuery } from 'src/features/routine/hooks/use-routine-query';
 import { useDeleteRoutine } from 'src/features/routine/hooks/use-routine-mutation';
@@ -16,6 +17,7 @@ function toKSTDateString(date: Date) {
 const RoutineMain = () => {
   const router = useRouter();
   const [selectedDate, setSelectedDate] = useState(new Date());
+  const [isCalendarModalVisible, setIsCalendarModalVisible] = useState(false);
 
   // 루틴 조회 훅
   const { routines, isLoading, error, refetch } = useRoutineQuery({
@@ -58,6 +60,11 @@ const RoutineMain = () => {
     // KST 00:00:00을 UTC로 맞추기 위해 Date.UTC 사용
     const kstDate = new Date(Date.UTC(year, month, day, 0, 0, 0));
     setSelectedDate(kstDate);
+  };
+
+  // 달력 아이콘 클릭 시 모달 열기
+  const handleCalendarIconPress = () => {
+    setIsCalendarModalVisible(true);
   };
 
   // 시간 포맷팅 함수
@@ -116,16 +123,17 @@ const RoutineMain = () => {
     );
   }
 
-  // 렌더링 시 selectedDate와 options.date 콘솔 출력
-  console.log('selectedDate:', selectedDate);
   const selectedDateStr = toKSTDateString(selectedDate);
-  console.log('options.date:', selectedDateStr);
 
   return (
     <View className="relative flex-1 bg-turquoise">
       {/* 상단 달력 */}
       <View className="px-4 pb-4 pt-8">
-        <Calendar selectedDate={selectedDate} onChange={handleDateChange} />
+        <Calendar
+          selectedDate={selectedDate}
+          onChange={handleDateChange}
+          onCalendarIconPress={handleCalendarIconPress}
+        />
       </View>
 
       {/* 루틴 리스트 */}
@@ -156,6 +164,172 @@ const RoutineMain = () => {
 
       {/* 플로팅 액션 버튼 */}
       <AddButton onPress={handleCreateRoutine} />
+
+      {/* 월 단위 달력 모달 */}
+      <Modal
+        visible={isCalendarModalVisible}
+        onClose={() => setIsCalendarModalVisible(false)}
+        className="max-w-sm"
+      >
+        <EnhancedCalendar
+          selectedDate={selectedDate}
+          onDateSelect={(date) => {
+            handleDateChange(date);
+            setIsCalendarModalVisible(false);
+          }}
+          onClose={() => setIsCalendarModalVisible(false)}
+        />
+      </Modal>
+    </View>
+  );
+};
+
+// 향상된 캘린더 컴포넌트
+const EnhancedCalendar = ({
+  selectedDate,
+  onDateSelect,
+  onClose,
+}: {
+  selectedDate: Date;
+  onDateSelect: (date: Date) => void;
+  onClose: () => void;
+}) => {
+  const [currentMonth, setCurrentMonth] = useState(
+    new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1),
+  );
+
+  // 현재 월의 첫 번째 날과 마지막 날
+  const firstDayOfMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
+  const lastDayOfMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0);
+
+  // 달력에 표시할 날짜들
+  const getCalendarDates = () => {
+    const dates: Date[] = [];
+
+    // 이전 달의 마지막 주 일부
+    const firstDayWeekday = firstDayOfMonth.getDay();
+    for (let i = firstDayWeekday - 1; i >= 0; i--) {
+      const prevDate = new Date(firstDayOfMonth);
+      prevDate.setDate(prevDate.getDate() - (i + 1));
+      dates.push(prevDate);
+    }
+
+    // 현재 달의 모든 날짜
+    for (let i = 1; i <= lastDayOfMonth.getDate(); i++) {
+      dates.push(new Date(currentMonth.getFullYear(), currentMonth.getMonth(), i));
+    }
+
+    // 다음 달의 첫 번째 주 일부 (6주로 완성)
+    const remainingDays = 42 - dates.length;
+    for (let i = 1; i <= remainingDays; i++) {
+      const nextDate = new Date(lastDayOfMonth);
+      nextDate.setDate(nextDate.getDate() + i);
+      dates.push(nextDate);
+    }
+
+    return dates;
+  };
+
+  const calendarDates = getCalendarDates();
+
+  // 월 이동
+  const goToPreviousMonth = () => {
+    setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1));
+  };
+
+  const goToNextMonth = () => {
+    setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1));
+  };
+
+  // 날짜가 현재 월에 속하는지 확인
+  const isCurrentMonth = (date: Date) => {
+    return (
+      date.getMonth() === currentMonth.getMonth() &&
+      date.getFullYear() === currentMonth.getFullYear()
+    );
+  };
+
+  // 날짜가 오늘인지 확인
+  const isToday = (date: Date) => {
+    const today = new Date();
+    return (
+      date.getFullYear() === today.getFullYear() &&
+      date.getMonth() === today.getMonth() &&
+      date.getDate() === today.getDate()
+    );
+  };
+
+  // 날짜가 선택된 날짜인지 확인
+  const isSelected = (date: Date) => {
+    return (
+      date.getFullYear() === selectedDate.getFullYear() &&
+      date.getMonth() === selectedDate.getMonth() &&
+      date.getDate() === selectedDate.getDate()
+    );
+  };
+
+  const WEEK_DAYS = ['일', '월', '화', '수', '목', '금', '토'];
+
+  return (
+    <View className="w-full">
+      {/* 헤더 */}
+      <View className="mb-6 flex-row items-center justify-between">
+        <TouchableOpacity onPress={goToPreviousMonth} className="bg-gray-100 rounded-full p-2">
+          <Text className="text-gray-600 text-lg font-bold">‹</Text>
+        </TouchableOpacity>
+        <Text className="text-gray-800 text-xl font-bold">
+          {currentMonth.getFullYear()}년 {currentMonth.getMonth() + 1}월
+        </Text>
+        <TouchableOpacity onPress={goToNextMonth} className="bg-gray-100 rounded-full p-2">
+          <Text className="text-gray-600 text-lg font-bold">›</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* 요일 헤더 */}
+      <View className="mb-4 flex-row">
+        {WEEK_DAYS.map((day, index) => (
+          <View key={day} className="flex-1 items-center py-2">
+            <Text
+              className={`text-sm font-medium ${index === 0 ? 'text-red-500' : index === 6 ? 'text-blue-500' : 'text-gray-600'}`}
+            >
+              {day}
+            </Text>
+          </View>
+        ))}
+      </View>
+
+      {/* 날짜 그리드 */}
+      <View className="flex-row flex-wrap">
+        {calendarDates.map((date, index) => {
+          const isCurrentMonthDate = isCurrentMonth(date);
+          const isTodayDate = isToday(date);
+          const isSelectedDate = isSelected(date);
+
+          return (
+            <TouchableOpacity
+              key={index}
+              onPress={() => onDateSelect(date)}
+              className={`h-12 w-[14.28%] items-center justify-center rounded-full ${
+                isSelectedDate ? 'bg-cyan-500' : isTodayDate ? 'bg-cyan-100' : ''
+              }`}
+            >
+              <Text
+                className={`text-sm font-medium ${
+                  isSelectedDate
+                    ? 'text-white'
+                    : isTodayDate
+                      ? 'text-cyan-600'
+                      : isCurrentMonthDate
+                        ? 'text-gray-800'
+                        : 'text-gray-400'
+                }`}
+              >
+                {date.getDate()}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
+      </View>
     </View>
   );
 };

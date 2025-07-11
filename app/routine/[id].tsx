@@ -146,14 +146,6 @@ const RoutineDetail = () => {
       }
     } else {
       const now = new Date();
-      console.log('루틴 생성 시점 startDate:', startDate);
-      console.log('루틴 생성 시점 createdAt(페이로드):', startDate);
-      console.log(
-        '루틴 생성 시점 new Date():',
-        now,
-        'KST:',
-        new Date(now.getTime() + 9 * 60 * 60 * 1000),
-      );
       const createPayload: CreateRoutinePayload = {
         name: title.trim(),
         details: description.trim() || undefined,
