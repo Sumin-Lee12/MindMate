@@ -10,52 +10,69 @@ import { RepeatCycleType, RepeatCycleDetail, WeekOrderType, WeekdayType } from '
  * @returns 파싱된 반복 설정 상세 정보 또는 null
  */
 export const parseRepeatCycle = (cycle: string): RepeatCycleDetail | null => {
+  // 앞뒤 공백 제거
+  const trimmedCycle = cycle.trim();
+
   // 매일
-  if (cycle === '매일') {
+  if (trimmedCycle === '매일') {
     return { type: 'daily', value: {} };
   }
 
   // X일마다
-  const intervalMatch = cycle.match(/^(\d+)일마다$/);
-  if (intervalMatch) {
-    return {
-      type: 'interval',
-      value: { interval: parseInt(intervalMatch[1]) },
-    };
+  if (trimmedCycle.endsWith('일마다')) {
+    const intervalStr = trimmedCycle.replace('일마다', '');
+    const interval = parseInt(intervalStr);
+    if (!isNaN(interval) && interval > 0) {
+      return {
+        type: 'interval',
+        value: { interval },
+      };
+    }
   }
 
   // 매주 요일
-  const weekdays = ['월', '화', '수', '목', '금', '토', '일'] as const;
-  const weeklyMatch = cycle.match(new RegExp(`^매주 (${weekdays.join('|')})$`));
-  if (weeklyMatch) {
-    return {
-      type: 'weekly',
-      value: { weekday: weeklyMatch[1] as WeekdayType },
-    };
+  if (trimmedCycle.startsWith('매주 ')) {
+    const weekday = trimmedCycle.replace('매주 ', '');
+    const weekdays = ['월요일', '화요일', '수요일', '목요일', '금요일', '토요일', '일요일'];
+    if (weekdays.includes(weekday)) {
+      return {
+        type: 'weekly',
+        value: { weekday: weekday.replace('요일', '') as WeekdayType },
+      };
+    }
   }
 
   // 매달 X일
-  const monthlyMatch = cycle.match(/^매달 (\d+)일$/);
-  if (monthlyMatch) {
-    return {
-      type: 'monthly',
-      value: { day: parseInt(monthlyMatch[1]) },
-    };
+  if (trimmedCycle.startsWith('매달 ') && trimmedCycle.endsWith('일')) {
+    const dayStr = trimmedCycle.replace('매달 ', '').replace('일', '');
+    const day = parseInt(dayStr);
+    if (!isNaN(day) && day >= 1 && day <= 31) {
+      return {
+        type: 'monthly',
+        value: { day },
+      };
+    }
   }
 
   // 매달 X번째주 요일
-  const weekOrders = ['첫째주', '둘째주', '셋째주', '넷째주', '마지막주'] as const;
-  const monthlyWeekMatch = cycle.match(
-    new RegExp(`^매달 (${weekOrders.join('|')}) (${weekdays.join('|')})$`),
-  );
-  if (monthlyWeekMatch) {
-    return {
-      type: 'monthlyWeek',
-      value: {
-        weekOrder: monthlyWeekMatch[1] as WeekOrderType,
-        weekday: monthlyWeekMatch[2] as WeekdayType,
-      },
-    };
+  if (trimmedCycle.startsWith('매달 ')) {
+    const weekOrders = ['첫째주', '둘째주', '셋째주', '넷째주', '마지막주'];
+    const weekdays = ['월요일', '화요일', '수요일', '목요일', '금요일', '토요일', '일요일'];
+
+    for (const weekOrder of weekOrders) {
+      if (trimmedCycle.includes(weekOrder + ' ')) {
+        const parts = trimmedCycle.replace('매달 ', '').split(' ');
+        if (parts.length === 2 && parts[0] === weekOrder && weekdays.includes(parts[1])) {
+          return {
+            type: 'monthlyWeek',
+            value: {
+              weekOrder: weekOrder as WeekOrderType,
+              weekday: parts[1].replace('요일', '') as WeekdayType,
+            },
+          };
+        }
+      }
+    }
   }
 
   return null; // 파싱 실패
@@ -83,45 +100,105 @@ export const formatRepeatCycle = (detail: RepeatCycleDetail): RepeatCycleType =>
   }
 };
 
+// KST(UTC+9)로 변환하는 함수
+function toKSTDate(date: Date) {
+  return new Date(date.getTime() + 9 * 60 * 60 * 1000);
+}
+
 /**
  * 특정 날짜에 루틴이 실행되어야 하는지 확인하는 함수
- * @param routine - 루틴 정보
+ * @param routine - 루틴 정보 (생성 날짜 포함)
  * @param targetDate - 확인할 날짜 (Date 객체)
  * @returns 해당 날짜에 루틴이 실행되어야 하면 true
  */
 export const shouldRunOnDate = (
-  routine: { repeatCycle: RepeatCycleType },
+  routine: { id: string; name: string; repeatCycle: RepeatCycleType; createdAt: string },
   targetDate: Date,
 ): boolean => {
   const detail = parseRepeatCycle(routine.repeatCycle);
-  if (!detail) return false;
 
-  const today = new Date();
-  const target = new Date(targetDate);
+  if (!detail) {
+    return false;
+  }
 
+  // 'YYYY-MM-DD' 문자열로만 비교
+  const createdStr = routine.createdAt.slice(0, 10);
+  const targetStr = [
+    targetDate.getFullYear(),
+    (targetDate.getMonth() + 1).toString().padStart(2, '0'),
+    targetDate.getDate().toString().padStart(2, '0'),
+  ].join('-');
+
+  // 생성일 이전은 무조건 false
+  if (targetStr < createdStr) return false;
+
+  // 반복 조건에 따라 정확히 판단
   switch (detail.type) {
     case 'daily':
       return true;
-
-    case 'interval':
-      if (!detail.value.interval) return false;
-      const daysDiff = Math.floor((target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-      return daysDiff % detail.value.interval === 0;
-
-    case 'weekly':
-      if (!detail.value.weekday) return false;
+    case 'interval': {
+      // daysDiff 계산도 문자열로만
+      const created = new Date(createdStr + 'T00:00:00');
+      const target = new Date(targetStr + 'T00:00:00');
+      const daysDiff = Math.floor((target.getTime() - created.getTime()) / (1000 * 60 * 60 * 24));
+      return daysDiff % (detail.value.interval || 1) === 0;
+    }
+    case 'weekly': {
       const weekdays = ['일', '월', '화', '수', '목', '금', '토'];
-      const targetWeekday = weekdays[target.getDay()];
+      const targetWeekday = weekdays[new Date(targetStr + 'T00:00:00').getDay()];
       return targetWeekday === detail.value.weekday;
+    }
+    case 'monthly': {
+      const targetDay = new Date(targetStr + 'T00:00:00').getDate();
 
-    case 'monthly':
-      if (!detail.value.day) return false;
-      return target.getDate() === detail.value.day;
+      // 날짜가 다르면 false
+      if (targetDay !== detail.value.day) {
+        return false;
+      }
 
-    case 'monthlyWeek':
-      if (!detail.value.weekOrder || !detail.value.weekday) return false;
-      return isNthWeekOfMonth(target, detail.value.weekOrder, detail.value.weekday);
+      // 생성일과 같은 월이면 true (생성일 이후의 해당 날짜)
+      const createdDate = new Date(createdStr + 'T00:00:00');
+      const targetDate = new Date(targetStr + 'T00:00:00');
 
+      // 같은 년도, 같은 월이면 생성일 이후의 해당 날짜인지 확인
+      if (
+        createdDate.getFullYear() === targetDate.getFullYear() &&
+        createdDate.getMonth() === targetDate.getMonth()
+      ) {
+        return targetDate.getDate() >= createdDate.getDate();
+      }
+
+      // 다른 월이면 생성일 이후의 월인지 확인
+      return targetDate > createdDate;
+    }
+    case 'monthlyWeek': {
+      // 기존 로직으로 해당 주차 요일인지 확인
+      const date = new Date(targetStr + 'T00:00:00');
+      const isCorrectWeekday = isNthWeekOfMonth(
+        date,
+        detail.value.weekOrder!,
+        detail.value.weekday!,
+      );
+
+      if (!isCorrectWeekday) {
+        return false;
+      }
+
+      // 생성일 이후의 해당 월인지 확인
+      const createdDate = new Date(createdStr + 'T00:00:00');
+      const targetDate = new Date(targetStr + 'T00:00:00');
+
+      // 같은 년도, 같은 월이면 생성일 이후의 해당 날짜인지 확인
+      if (
+        createdDate.getFullYear() === targetDate.getFullYear() &&
+        createdDate.getMonth() === targetDate.getMonth()
+      ) {
+        return targetDate.getDate() >= createdDate.getDate();
+      }
+
+      // 다른 월이면 생성일 이후의 월인지 확인
+      return targetDate > createdDate;
+    }
     default:
       return false;
   }
@@ -185,11 +262,24 @@ const isNthWeekOfMonth = (date: Date, weekOrder: string, weekday: string): boole
  * @returns 다음 실행 날짜
  */
 export const getNextRunDate = (
-  routine: { repeatCycle: RepeatCycleType },
+  routine: { repeatCycle: RepeatCycleType; createdAt: string },
   fromDate: Date = new Date(),
 ): Date => {
   const detail = parseRepeatCycle(routine.repeatCycle);
   if (!detail) return fromDate;
+
+  // createdAt과 fromDate를 YYYY-MM-DD 형식으로 비교
+  const createdStr = routine.createdAt.slice(0, 10);
+  const fromStr = [
+    fromDate.getFullYear(),
+    (fromDate.getMonth() + 1).toString().padStart(2, '0'),
+    fromDate.getDate().toString().padStart(2, '0'),
+  ].join('-');
+
+  // fromDate가 createdAt과 같다면, 시작 날짜로 간주하고 fromDate 반환
+  if (fromStr === createdStr) {
+    return new Date(fromDate);
+  }
 
   const result = new Date(fromDate);
 
@@ -223,11 +313,9 @@ export const getNextRunDate = (
       break;
 
     case 'monthlyWeek':
-      // 다음 달의 해당 주차 요일로 설정
       if (detail.value.weekOrder && detail.value.weekday) {
         result.setMonth(result.getMonth() + 1);
         result.setDate(1);
-        // 해당 월의 첫 번째 해당 요일을 찾고 주차에 따라 계산
         const weekdays = ['일', '월', '화', '수', '목', '금', '토'];
         const targetWeekdayIndex = weekdays.indexOf(detail.value.weekday);
         const firstWeekday = result.getDay();

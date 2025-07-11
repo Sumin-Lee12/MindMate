@@ -24,7 +24,9 @@ const Calendar = ({ selectedDate, onChange, className = '' }: CalendarProps) => 
   }, [selectedDate]);
 
   const weekDates = useMemo(() => {
-    return Array.from({ length: 7 }, (_, i) => addDays(viewDate, i));
+    return Array.from({ length: 7 }, (_, i) => {
+      return new Date(viewDate.getFullYear(), viewDate.getMonth(), viewDate.getDate() + i);
+    });
   }, [viewDate]);
 
   // 날짜 포맷: 2025년 7월 4일
@@ -46,7 +48,9 @@ const Calendar = ({ selectedDate, onChange, className = '' }: CalendarProps) => 
           return (
             <TouchableOpacity
               key={date.toISOString()}
-              onPress={() => onChange(date)}
+              onPress={() => {
+                onChange(date);
+              }}
               className={`w-7 items-center justify-center rounded-full py-1 ${isSelected ? 'bg-paleYellow' : ''}`}
             >
               <Text className={`text-xs font-medium ${isSelected ? 'text-black' : 'text-gray'}`}>

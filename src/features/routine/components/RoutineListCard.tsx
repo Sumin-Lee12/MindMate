@@ -35,31 +35,30 @@ const RoutineListCard = ({
     <TouchableOpacity
       onPress={onPress}
       activeOpacity={0.8}
-      className={`mb-3 flex-row items-stretch rounded-xl bg-white shadow-dropShadow ${className}`}
+      className={`mb-3 flex-row rounded-xl bg-white shadow-dropShadow ${className}`}
+      style={{ width: 358, height: 96, position: 'relative' }}
     >
-      {/* 좌측 색상 bar */}
       <View className="w-2 rounded-l-xl bg-paleCobalt" />
-      {/* 내용 */}
-      <View className="flex-1 p-4">
-        <View className="flex-row items-start justify-between">
-          <View className="flex-1">
-            <Text className="mb-1 text-base font-bold text-paleCobalt">{title}</Text>
-            <Text className="text-xs text-gray">
-              {time} ~{duration}
-            </Text>
-          </View>
-          <View className="ml-2 flex-row items-center">
-            {onEdit && (
-              <TouchableOpacity onPress={onEdit} className="mr-2">
-                <Pencil size={18} color="#576BCD" />
-              </TouchableOpacity>
-            )}
-            {onDelete && (
-              <TouchableOpacity onPress={onDelete}>
-                <Trash size={18} color="#576BCD" />
-              </TouchableOpacity>
-            )}
-          </View>
+      <View style={{ position: 'absolute', top: 16, right: 20, flexDirection: 'row', zIndex: 2 }}>
+        {onEdit && (
+          <TouchableOpacity onPress={onEdit} style={{ marginRight: 8 }}>
+            <Pencil size={24} color="#576BCD" />
+          </TouchableOpacity>
+        )}
+        {onDelete && (
+          <TouchableOpacity onPress={onDelete}>
+            <Trash size={24} color="#576BCD" />
+          </TouchableOpacity>
+        )}
+      </View>
+      <View className="h-full flex-1 pl-4 pr-4">
+        <View className="h-full flex-1 justify-center">
+          <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#576BCD', marginBottom: 4 }}>
+            {title}
+          </Text>
+          <Text style={{ fontSize: 20, color: '#576BCD' }}>
+            {time} ~{duration}
+          </Text>
         </View>
       </View>
     </TouchableOpacity>

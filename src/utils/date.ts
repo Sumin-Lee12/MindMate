@@ -16,9 +16,8 @@ export const addDays = (date: Date, days: number) => {
  * @returns 해당 주의 시작(일요일) Date 객체
  */
 export const getWeekStart = (date: Date) => {
-  const d = new Date(date);
+  const d = new Date(date.getFullYear(), date.getMonth(), date.getDate());
   d.setDate(d.getDate() - d.getDay());
-  d.setHours(0, 0, 0, 0);
   return d;
 };
 
